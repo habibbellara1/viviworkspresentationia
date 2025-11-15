@@ -1492,8 +1492,10 @@ export function DevisContent() {
     html += '\n          }';
     html += '\n          var signatureData = canvas.toDataURL("image/png");';
     html += '\n          var signatureDate = new Date().toLocaleString("fr-FR");';
+    html += '\n          var devisTitle = document.querySelector(".devis-title");';
+    html += '\n          if (devisTitle) devisTitle.textContent = "FACTURE";';
     html += '\n          var signatureSection = document.querySelector(".signature-section");';
-    html += '\n          signatureSection.innerHTML = "<div style=\\"text-align: center; padding: 30px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 10px; border: 3px solid #22c55e;\\"><h3 style=\\"color: #15803d; font-size: 18px; font-weight: 700; margin-bottom: 15px;\\">✅ DEVIS ACCEPTÉ ET SIGNÉ</h3><div style=\\"background: white; padding: 20px; border-radius: 8px; margin: 15px auto; max-width: 400px;\\"><div style=\\"font-weight: 600; color: #2d3748; margin-bottom: 10px;\\">Signature du client</div><div style=\\"font-style: italic; color: #4fafc4; margin-bottom: 10px;\\">(Bon pour accord)</div><img src=\\"" + signatureData + "\\" style=\\"max-width: 300px; width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; display: block; margin: 10px auto;\\" /><div style=\\"margin-top: 10px; font-size: 12px; color: #718096;\\">📅 Signé le " + signatureDate + "</div></div></div>";';
+    html += '\n          signatureSection.innerHTML = "<div style=\\"text-align: center; padding: 30px; background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%); border-radius: 10px; border: 3px solid #22c55e;\\"><h3 style=\\"color: #15803d; font-size: 18px; font-weight: 700; margin-bottom: 15px;\\">✅ FACTURE SIGNÉE</h3><div style=\\"background: white; padding: 20px; border-radius: 8px; margin: 15px auto; max-width: 400px;\\"><div style=\\"font-weight: 600; color: #2d3748; margin-bottom: 10px;\\">Signature du client</div><div style=\\"font-style: italic; color: #4fafc4; margin-bottom: 10px;\\">(Bon pour accord)</div><img src=\\"" + signatureData + "\\" style=\\"max-width: 300px; width: 100%; border: 2px solid #e2e8f0; border-radius: 8px; display: block; margin: 10px auto;\\" /><div style=\\"margin-top: 10px; font-size: 12px; color: #718096;\\">📅 Signé le " + signatureDate + "</div></div></div>";';
     html += '\n          setTimeout(function() {';
     html += '\n            html2canvas(document.querySelector(".container"), { scale: 2, useCORS: true, logging: false, backgroundColor: "#ffffff" }).then(function(canvasResult) {';
     html += '\n              var jsPDF = window.jspdf.jsPDF;';
@@ -1513,7 +1515,7 @@ export function DevisContent() {
     html += '\n                heightLeft -= pageHeight;';
     html += '\n              }';
     html += '\n              var timestamp = new Date().toISOString().split("T")[0];';
-    html += '\n              var fileName = "devis-signe-" + timestamp + ".pdf";';
+    html += '\n              var fileName = "facture-signee-" + timestamp + ".pdf";';
     html += '\n              pdf.save(fileName);';
     html += '\n              if (statusMessage) {';
     html += '\n                statusMessage.innerHTML = "✅ PDF téléchargé avec succès !";';
@@ -1569,8 +1571,10 @@ export function DevisContent() {
 
   const handleSave = async () => {
     try {
-      // Sauvegarder le devis via l'API Upstash
-      const response = await fetch('/api/devis', {
+      // Sauvegarder le devis via l'API MongoDB Atlas (512 MB gratuit)
+      const API_ENDPOINT = '/api/devis-mongodb'
+      
+      const response = await fetch(API_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -2036,4 +2040,5 @@ export function DevisContent() {
     </div>
   )
 }
+
 

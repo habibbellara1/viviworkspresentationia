@@ -71,11 +71,13 @@ export function ListeDevisContent() {
   const [selectedDevis, setSelectedDevis] = useState<DevisData | null>(null)
   const [showDetails, setShowDetails] = useState(false)
 
-  // Charger tous les devis
+  // Charger tous les devis depuis MongoDB Atlas
   const loadDevis = async () => {
     setIsLoading(true)
     try {
-      const response = await fetch('/api/devis')
+      const API_ENDPOINT = '/api/devis-mongodb'
+      
+      const response = await fetch(API_ENDPOINT)
       const data = await response.json()
 
       if (response.ok) {
@@ -99,14 +101,16 @@ export function ListeDevisContent() {
     loadDevis()
   }, [])
 
-  // Supprimer un devis
+  // Supprimer un devis depuis MongoDB Atlas
   const handleDelete = async (id: string) => {
     if (!confirm('Êtes-vous sûr de vouloir supprimer ce devis ?')) {
       return
     }
 
     try {
-      const response = await fetch(`/api/devis/${id}`, {
+      const API_ENDPOINT = '/api/devis-mongodb'
+      
+      const response = await fetch(`${API_ENDPOINT}/${id}`, {
         method: 'DELETE',
       })
 
@@ -488,4 +492,5 @@ export function ListeDevisContent() {
     </div>
   )
 }
+
 
