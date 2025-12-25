@@ -1,5 +1,6 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
+  turbopack: false,
   typescript: {
     ignoreBuildErrors: true,
   },

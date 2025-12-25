@@ -1,593 +1,232 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { 
-  Check,
-  Plus,
-  Minus,
-  CheckCircle
-} from "lucide-react"
+import Image from "next/image"
+import { Plus, Check } from "lucide-react"
 
-// Services à la carte
-const servicesCarte = [
-  { id: "audit-digital", label: "Audit digital complet", price: 890, type: "one-time" },
-  { id: "logo-identite", label: "Création logo + identité", price: 1200, type: "one-time" },
-  { id: "formation-sur-mesure", label: "Formations sur mesure", price: 150, type: "per-hour" },
-  { id: "crisis-reputation", label: "Gestion crisis e-réputation", price: 500, type: "per-intervention" },
-  { id: "hosting-android", label: "Hébergement Android", price: 25, type: "lifetime" },
-  { id: "hosting-ios", label: "Hébergement iOS", price: 99, type: "yearly" },
-  { id: "geoloc-tracking", label: "Option géolocalisation tracking en continu (hors abonnement API)", price: 2500, type: "one-time" },
+// Options disponibles (colonne gauche)
+const optionsDisponibles = [
+  { id: "logo", label: "Création du logo", price: 500 },
+  { id: "agenda", label: "Agenda en ligne", price: 300 },
+  { id: "crm", label: "CRM", price: 800 },
+  { id: "visio", label: "RDV en visioconférence", price: 200 },
+  { id: "photos", label: "Reportage photos", price: 600 },
+  { id: "video", label: "Vidéo de présentation", price: 1200 },
+  { id: "chatbot", label: "Chatbot IA", price: 1990 },
+  { id: "newsletter", label: "Newsletter automatisée", price: 400 },
+  { id: "ecommerce", label: "Module e-commerce", price: 1500 },
+  { id: "multilingue", label: "Site multilingue", price: 800 },
 ]
 
-// Modules additionnels mensuels
-const modulesAdditionnels = [
-  { id: "ecommerce-avance", label: "E-commerce avancé", price: 400, type: "monthly" },
-  { id: "reseaux-supplementaires", label: "Réseaux sociaux supplémentaires (upsell)", price: 200, type: "monthly" },
-  { id: "redaction-web", label: "Rédaction web (articles supplémentaires)", price: 150, type: "per-article" },
-  { id: "campagnes-saisonnieres", label: "Campagnes saisonnières", price: 300, type: "per-campaign" },
-  { id: "maintenance", label: "Maintenance (3 mois gratuits puis 300€/mois)", price: 300, type: "monthly" },
-]
-
-// Options chatbot (niveaux)
-const chatbotOptions = [
-  { id: "chatbot-basic", label: "Chat et chatbot : Niveau basique (FAQ statique multilingue, sans IA)", price: 1990, type: "one-time" },
-  { id: "chatbot-mid", label: "Chatbot niveau intermédiaire (NLP, multi-langues via API GPT/Dialogflow/Rasa)", price: 5590, type: "one-time" },
-  { id: "chatbot-advanced", label: "Chatbot niveau avancé (IA multilingue, traduction temps réel, connexion CRM/DB, WhatsApp/Telegram/Email)", price: 14990, type: "one-time" },
-]
-
-// Reconnaissance faciale
-const facialRecognitionOptions = [
-  { id: "facial-basic", label: "Reconnaissance faciale - Basique (FaceID/TouchID natif)", price: 990, type: "one-time" },
-  { id: "facial-mid", label: "Reconnaissance faciale - Intermédiaire (SDK/API tierce : Face++, AWS, Azure)", price: 4990, type: "one-time" },
-  { id: "facial-advanced", label: "Reconnaissance faciale - Avancé (biométrie complète + liveness + intégration CRM/DB)", price: 16990, type: "one-time" },
-]
-
-// Scanner codes-barres / QR
-const scannerOptions = [
-  { id: "scanner-basic", label: "Scanner code-barres/QR - Basique (scanner simple via caméra)", price: 590, type: "one-time" },
-  { id: "scanner-mid", label: "Scanner - Intermédiaire (multi-formats + stockage local)", price: 1290, type: "one-time" },
-  { id: "scanner-advanced", label: "Scanner - Avancé (intégration DB/ERP/CRM + génération de QR + inventaire)", price: 4990, type: "one-time" },
-]
-
-// Authentification biométrique
-const biometricAuthOptions = [
-  { id: "bio-basic", label: "Authentification biométrique - Basique (FaceID/TouchID natif)", price: 890, type: "one-time" },
-  { id: "bio-mid", label: "Authentification biométrique - Intermédiaire (SDK/API tierce)", price: 4990, type: "one-time" },
-  { id: "bio-advanced", label: "Authentification biométrique - Avancé (liveness, intégration CRM/ERP, conformité)", price: 12990, type: "one-time" },
-]
-
-// Paiement NFC / Wallet
-const nfcPaymentOptions = [
-  { id: "nfc-basic", label: "Paiement NFC/Wallet - Basique (Apple Pay / Google Pay)", price: 3990, type: "one-time" },
-  { id: "nfc-mid", label: "Paiement NFC - Intermédiaire (NFC + fidélité/coupons + Stripe/Adyen/PayPal)", price: 9990, type: "one-time" },
-  { id: "nfc-advanced", label: "Paiement NFC - Avancé (NFC + in-app purchase + multi-devises + PCI DSS + intégrations)", price: 25000, type: "one-time" },
-]
-
-// Apps mobiles IA
-const mobileAppOptions = [
-  { id: "app-mobile-ia-starter", label: "APP MOBILE IA - STARTER", price: 4999, type: "project-based" },
-  { id: "app-mobile-ia-professionnel", label: "APP MOBILE IA - PROFESSIONNEL", price: 7999, type: "project-based" },
+// Offre personnalisée (colonne droite) - inclus par défaut
+const offrePersonnalisee = [
+  { id: "responsive", label: "Responsive design", icon: "📱" },
+  { id: "seo", label: "Référencement naturel", icon: "🔍" },
+  { id: "ssl", label: "Navigation sécurisée", icon: "🔒" },
+  { id: "stats", label: "Statistiques", icon: "📊" },
+  { id: "hebergement", label: "Hébergement inclus", icon: "☁️" },
+  { id: "support", label: "Support technique", icon: "🛠️" },
+  { id: "miseajour", label: "Mises à jour illimitées", icon: "🔄" },
+  { id: "formation", label: "Formation incluse", icon: "🎓" },
 ]
 
 export function CaracteristiquesContent() {
-  const [selectedServices, setSelectedServices] = useState<any[]>([])
-  const [selectedModules, setSelectedModules] = useState<any[]>([])
-  const [selectedChatbot, setSelectedChatbot] = useState<string | null>(null)
-  const [selectedMobileApp, setSelectedMobileApp] = useState<string | null>(null)
-  const [selectedFacial, setSelectedFacial] = useState<string | null>(null)
-  const [selectedScanner, setSelectedScanner] = useState<string | null>(null)
-  const [selectedBiometricAuth, setSelectedBiometricAuth] = useState<string | null>(null)
-  const [selectedNfcPayment, setSelectedNfcPayment] = useState<string | null>(null)
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false)
+  const [selectedOptions, setSelectedOptions] = useState<string[]>([])
+  const [visitesParMois, setVisitesParMois] = useState(100)
 
-  const handleServiceToggle = (serviceId: string) => {
-    const service = servicesCarte.find(s => s.id === serviceId)
-    if (!service) return
-
-    const existingIndex = selectedServices.findIndex(s => s.id === serviceId)
-    
-    if (existingIndex >= 0) {
-      // Supprimer le service
-      setSelectedServices(prev => prev.filter(s => s.id !== serviceId))
-    } else {
-      // Ajouter le service avec quantité par défaut
-      const quantity = service.type === 'per-hour' || service.type === 'per-intervention' ? 1 : 1
-      setSelectedServices(prev => [...prev, { ...service, quantity }])
+  useEffect(() => {
+    // Charger les sélections depuis localStorage
+    const saved = localStorage.getItem('caracteristiques-options')
+    if (saved) {
+      setSelectedOptions(JSON.parse(saved))
     }
+  }, [])
+
+  const toggleOption = (optionId: string) => {
+    setSelectedOptions(prev => {
+      const newSelection = prev.includes(optionId)
+        ? prev.filter(id => id !== optionId)
+        : [...prev, optionId]
+      
+      localStorage.setItem('caracteristiques-options', JSON.stringify(newSelection))
+      return newSelection
+    })
   }
 
-  const handleModuleToggle = (moduleId: string) => {
-    const module = modulesAdditionnels.find(m => m.id === moduleId)
-    if (!module) return
-
-    const existingIndex = selectedModules.findIndex(m => m.id === moduleId)
-    
-    if (existingIndex >= 0) {
-      // Supprimer le module
-      setSelectedModules(prev => prev.filter(m => m.id !== moduleId))
-    } else {
-      // Ajouter le module avec quantité par défaut
-      const quantity = module.type === 'per-article' || module.type === 'per-campaign' ? 1 : 1
-      setSelectedModules(prev => [...prev, { ...module, quantity }])
-    }
-  }
-
-  const handleChatbotSelect = (chatbotId: string) => {
-    setSelectedChatbot(selectedChatbot === chatbotId ? null : chatbotId)
-  }
-
-  const handleFacialSelect = (id: string) => {
-    setSelectedFacial(selectedFacial === id ? null : id)
-  }
-
-  const handleScannerSelect = (id: string) => {
-    setSelectedScanner(selectedScanner === id ? null : id)
-  }
-
-  const handleBiometricAuthSelect = (id: string) => {
-    setSelectedBiometricAuth(selectedBiometricAuth === id ? null : id)
-  }
-
-  const handleNfcPaymentSelect = (id: string) => {
-    setSelectedNfcPayment(selectedNfcPayment === id ? null : id)
-  }
-
-  const handleMobileAppSelect = (appId: string) => {
-    setSelectedMobileApp(selectedMobileApp === appId ? null : appId)
-  }
-
-  const updateQuantity = (type: 'service' | 'module', id: string, newQuantity: number) => {
-    if (newQuantity < 1) return
-
-    if (type === 'service') {
-      setSelectedServices(prev => 
-        prev.map(s => s.id === id ? { ...s, quantity: newQuantity } : s)
-      )
-    } else {
-      setSelectedModules(prev => 
-        prev.map(m => m.id === id ? { ...m, quantity: newQuantity } : m)
-      )
-    }
-  }
-
-  const handleConfirm = () => {
-    const selections = {
-      selectedServices,
-      selectedModules,
-      selectedChatbot,
-      selectedMobileApp,
-      selectedFacial,
-      selectedScanner,
-      selectedBiometricAuth,
-      selectedNfcPayment,
-    }
-    
-    localStorage.setItem('caracteristiques-selections', JSON.stringify(selections))
-    
-    // Afficher le message de succès
-    setShowSuccessMessage(true)
-    
-    // Masquer le message après 3 secondes
-    setTimeout(() => {
-      setShowSuccessMessage(false)
-    }, 3000)
-  }
-
-  const isServiceSelected = (serviceId: string) => {
-    return selectedServices.some(s => s.id === serviceId)
-  }
-
-  const isModuleSelected = (moduleId: string) => {
-    return selectedModules.some(m => m.id === moduleId)
-  }
-
-  const getServiceQuantity = (serviceId: string) => {
-    const service = selectedServices.find(s => s.id === serviceId)
-    return service ? service.quantity : 0
-  }
-
-  const getModuleQuantity = (moduleId: string) => {
-    const module = selectedModules.find(m => m.id === moduleId)
-    return module ? module.quantity : 0
-  }
+  const totalOptions = selectedOptions.reduce((sum, id) => {
+    const option = optionsDisponibles.find(o => o.id === id)
+    return sum + (option?.price || 0)
+  }, 0)
 
   return (
-    <div className="max-w-4xl mx-auto px-4">
-      <div className="bg-white rounded-2xl shadow-lg p-6 md:p-8">
-        <h1 className="text-3xl md:text-4xl font-bold text-[#804d3b] mb-8 text-center">
-          Options complémentaires
-        </h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-100">
 
-        {/* Message de succès */}
-        {showSuccessMessage && (
-          <div className="mb-6 p-4 bg-green-50 border border-green-200 rounded-lg flex items-center gap-3">
-            <CheckCircle className="w-6 h-6 text-green-600" />
-            <div>
-              <h3 className="text-lg font-semibold text-green-800">Sélections enregistrées !</h3>
-              <p className="text-sm text-green-700">Vos options seront incluses dans votre offre de partenariat.</p>
-            </div>
-          </div>
-        )}
 
-        {/* Services à la carte */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-[#804d3b] flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#804d3b]"></div>
-              Services à la Carte
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {servicesCarte.map((service) => (
-              <div key={service.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => handleServiceToggle(service.id)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      isServiceSelected(service.id)
-                        ? 'bg-[#804d3b] border-[#804d3b] text-white'
-                        : 'border-gray-300 hover:border-[#804d3b]'
-                        }`}
-                      >
-                    {isServiceSelected(service.id) && <Check className="w-4 h-4" />}
-                  </button>
-                  <div>
-                    <div className="font-medium text-gray-900">{service.label}</div>
-                    <div className="text-sm text-gray-600">
-                      {service.type === 'per-hour' ? `${service.price}€/heure` :
-                       service.type === 'per-intervention' ? `${service.price}€/intervention` :
-                       service.type === 'yearly' ? `${service.price}€/an` :
-                       service.type === 'lifetime' ? `${service.price}€ à vie` :
-                       service.type === 'project-based' ? `Prix selon projet (${service.price}€)` :
-                       `${service.price}€`}
-                    </div>
-            </div>
-          </div>
-
-                {isServiceSelected(service.id) && (service.type === 'per-hour' || service.type === 'per-intervention') && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => updateQuantity('service', service.id, getServiceQuantity(service.id) - 1)}
-                      className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="w-8 text-center">{getServiceQuantity(service.id)}</span>
-                    <button
-                      onClick={() => updateQuantity('service', service.id, getServiceQuantity(service.id) + 1)}
-                      className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                    >
-                      <Plus className="w-4 h-4" />
-                    </button>
-            </div>
-                )}
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Modules additionnels mensuels */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-[#804d3b] flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#804d3b]"></div>
-              Modules Additionnels Mensuels
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {modulesAdditionnels.map((module) => (
-              <div key={module.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => handleModuleToggle(module.id)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      isModuleSelected(module.id)
-                        ? 'bg-[#804d3b] border-[#804d3b] text-white'
-                        : 'border-gray-300 hover:border-[#804d3b]'
-                    }`}
-                  >
-                    {isModuleSelected(module.id) && <Check className="w-4 h-4" />}
-                  </button>
-                <div>
-                    <div className="font-medium text-gray-900">{module.label}</div>
-                    <div className="text-sm text-gray-600">
-                      {module.type === 'per-article' ? `${module.price}€/article` : 
-                       module.type === 'per-campaign' ? `${module.price}€/campagne` : 
-                       `${module.price}€/mois`}
-                </div>
-              </div>
-            </div>
-
-                {isModuleSelected(module.id) && (
-                  <div className="flex items-center gap-2">
-                    <button
-                      onClick={() => updateQuantity('module', module.id, getModuleQuantity(module.id) - 1)}
-                      className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-                    >
-                      <Minus className="w-4 h-4" />
-                    </button>
-                    <span className="w-8 text-center">{getModuleQuantity(module.id)}</span>
-                    <button
-                      onClick={() => updateQuantity('module', module.id, getModuleQuantity(module.id) + 1)}
-                      className="w-8 h-8 rounded-full border border-gray-300 flex items-center justify-center hover:bg-gray-100"
-            >
-                      <Plus className="w-4 h-4" />
-                    </button>
-                  </div>
-                )}
-          </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Chatbot */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-[#804d3b] flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#804d3b]"></div>
-              Chatbot
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {chatbotOptions.map((chatbot) => (
-              <div key={chatbot.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => handleChatbotSelect(chatbot.id)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      selectedChatbot === chatbot.id
-                        ? 'bg-[#804d3b] border-[#804d3b] text-white'
-                        : 'border-gray-300 hover:border-[#804d3b]'
-                    }`}
-                  >
-                    {selectedChatbot === chatbot.id && <Check className="w-4 h-4" />}
-                  </button>
-                  <div>
-                    <div className="font-medium text-gray-900">{chatbot.label}</div>
-                    <div className="text-sm text-gray-600">{chatbot.price}€</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-          </CardContent>
-        </Card>
-
-        {/* Reconnaissance faciale */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-[#804d3b] flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#804d3b]"></div>
-              Reconnaissance faciale
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {facialRecognitionOptions.map((opt) => (
-              <div key={opt.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => handleFacialSelect(opt.id)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      selectedFacial === opt.id
-                        ? 'bg-[#804d3b] border-[#804d3b] text-white'
-                        : 'border-gray-300 hover:border-[#804d3b]'
-                    }`}
-                  >
-                    {selectedFacial === opt.id && <Check className="w-4 h-4" />}
-                  </button>
-                  <div>
-                    <div className="font-medium text-gray-900">{opt.label}</div>
-                    <div className="text-sm text-gray-600">{opt.price}€</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Scanner codes-barres / QR */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-[#804d3b] flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#804d3b]"></div>
-              Scanner codes-barres / QR
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {scannerOptions.map((opt) => (
-              <div key={opt.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => handleScannerSelect(opt.id)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      selectedScanner === opt.id
-                        ? 'bg-[#804d3b] border-[#804d3b] text-white'
-                        : 'border-gray-300 hover:border-[#804d3b]'
-                    }`}
-                  >
-                    {selectedScanner === opt.id && <Check className="w-4 h-4" />}
-                  </button>
-                  <div>
-                    <div className="font-medium text-gray-900">{opt.label}</div>
-                    <div className="text-sm text-gray-600">{opt.price}€</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Authentification biométrique */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-[#804d3b] flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#804d3b]"></div>
-              Authentification biométrique
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {biometricAuthOptions.map((opt) => (
-              <div key={opt.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => handleBiometricAuthSelect(opt.id)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      selectedBiometricAuth === opt.id
-                        ? 'bg-[#804d3b] border-[#804d3b] text-white'
-                        : 'border-gray-300 hover:border-[#804d3b]'
-                    }`}
-                  >
-                    {selectedBiometricAuth === opt.id && <Check className="w-4 h-4" />}
-                  </button>
-                  <div>
-                    <div className="font-medium text-gray-900">{opt.label}</div>
-                    <div className="text-sm text-gray-600">{opt.price}€</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Paiement NFC / Wallet */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-[#804d3b] flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#804d3b]"></div>
-              Paiement NFC / Wallet
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {nfcPaymentOptions.map((opt) => (
-              <div key={opt.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => handleNfcPaymentSelect(opt.id)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      selectedNfcPayment === opt.id
-                        ? 'bg-[#804d3b] border-[#804d3b] text-white'
-                        : 'border-gray-300 hover:border-[#804d3b]'
-                    }`}
-                  >
-                    {selectedNfcPayment === opt.id && <Check className="w-4 h-4" />}
-                  </button>
-                  <div>
-                    <div className="font-medium text-gray-900">{opt.label}</div>
-                    <div className="text-sm text-gray-600">{opt.price}€</div>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
-
-        {/* Apps Mobiles IA */}
-        <Card className="mb-8">
-          <CardHeader>
-            <CardTitle className="text-xl font-bold text-[#804d3b] flex items-center gap-2">
-              <div className="w-3 h-3 rounded-full bg-[#804d3b]"></div>
-              Apps Mobiles IA
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            {mobileAppOptions.map((app) => (
-              <div key={app.id} className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50">
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={() => handleMobileAppSelect(app.id)}
-                    className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-colors ${
-                      selectedMobileApp === app.id
-                        ? 'bg-[#804d3b] border-[#804d3b] text-white'
-                        : 'border-gray-300 hover:border-[#804d3b]'
-                    }`}
-                  >
-                    {selectedMobileApp === app.id && <Check className="w-4 h-4" />}
-                  </button>
-                  <div>
-                    <div className="font-medium text-gray-900">{app.label}</div>
-                    <div className="text-sm text-gray-600">Prix selon projet ({app.price}€)</div>
-                    </div>
-                  </div>
-                </div>
-              ))}
-          </CardContent>
-        </Card>
-
-        {/* Bouton de confirmation */}
-        <div className="text-center">
-          <Button 
-            onClick={handleConfirm}
-            className="bg-[#804d3b] hover:bg-[#6a3f2f] text-white px-8 py-3 text-lg font-bold rounded-xl shadow-lg flex items-center gap-2 mx-auto"
-          >
-            <CheckCircle className="w-5 h-5" />
-            Confirmer les sélections
-          </Button>
-            </div>
-
-        {/* Récapitulatif des sélections */}
-        {(selectedServices.length > 0 || selectedModules.length > 0 || selectedChatbot || selectedMobileApp) && (
-          <div className="mt-8 p-6 bg-[#f5e6e0] border-l-4 border-[#804d3b] rounded-r-lg">
-            <h3 className="text-lg font-bold text-[#804d3b] mb-4">Récapitulatif de vos sélections</h3>
+      {/* Main Content - 3 Columns */}
+      <div className="max-w-7xl mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          
+          {/* Colonne Gauche - Options disponibles */}
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <span className="w-8 h-8 bg-[#FF0671] rounded-full flex items-center justify-center text-white text-sm">+</span>
+              Options disponibles
+            </h2>
             
-            {selectedServices.length > 0 && (
-              <div className="mb-4">
-                <h4 className="font-semibold text-[#6a3f2f] mb-2">Services à la carte :</h4>
-                <ul className="space-y-1">
-                  {selectedServices.map((service) => (
-                    <li key={service.id} className="text-sm text-[#6a3f2f]">
-                      • {service.label} : {service.type === 'per-hour' || service.type === 'per-intervention'
-                        ? `${service.price}€ × ${service.quantity} = ${service.price * service.quantity}€`
-                        : service.type === 'yearly'
-                          ? `${service.price}€/an`
-                          : service.type === 'lifetime'
-                            ? `${service.price}€ à vie`
-                            : service.type === 'project-based'
-                              ? `Prix selon projet (${service.price}€)`
-                              : `${service.price}€`}
-                    </li>
-                  ))}
-                </ul>
-                </div>
-            )}
+            <div className="space-y-3">
+              {optionsDisponibles.map((option) => {
+                const isSelected = selectedOptions.includes(option.id)
+                return (
+                  <button
+                    key={option.id}
+                    onClick={() => toggleOption(option.id)}
+                    className={`w-full flex items-center justify-between p-3 rounded-xl border-2 transition-all ${
+                      isSelected 
+                        ? 'border-[#FF0671] bg-pink-50' 
+                        : 'border-gray-200 hover:border-[#FF0671] hover:bg-gray-50'
+                    }`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all ${
+                        isSelected 
+                          ? 'bg-[#FF0671] border-[#FF0671] text-white' 
+                          : 'border-gray-300'
+                      }`}>
+                        {isSelected ? <Check className="w-4 h-4" /> : <Plus className="w-3 h-3 text-gray-400" />}
+                      </div>
+                      <span className={`font-medium ${isSelected ? 'text-[#FF0671]' : 'text-gray-700'}`}>
+                        {option.label}
+                      </span>
+                    </div>
+                    <span className={`text-sm font-bold ${isSelected ? 'text-[#FF0671]' : 'text-gray-500'}`}>
+                      +{option.price}€
+                    </span>
+                  </button>
+                )
+              })}
+            </div>
 
-            {selectedModules.length > 0 && (
-              <div className="mb-4">
-                <h4 className="font-semibold text-[#6a3f2f] mb-2">Modules additionnels :</h4>
-                <ul className="space-y-1">
-                  {selectedModules.map((module) => (
-                    <li key={module.id} className="text-sm text-[#6a3f2f]">
-                      • {module.label} : {module.type === 'per-article' || module.type === 'per-campaign'
-                        ? `${module.price}€ × ${module.quantity} = ${module.price * module.quantity}€`
-                        : `${module.price}€/mois × ${module.quantity} = ${module.price * module.quantity}€/mois`}
-                    </li>
-                  ))}
-                </ul>
-                </div>
-            )}
-
-            {selectedChatbot && (
-              <div className="mb-4">
-                <h4 className="font-semibold text-[#6a3f2f] mb-2">Chatbot :</h4>
-                <ul className="space-y-1">
-                  <li className="text-sm text-[#6a3f2f]">
-                    • {chatbotOptions.find(c => c.id === selectedChatbot)?.label} : {chatbotOptions.find(c => c.id === selectedChatbot)?.price}€
-                  </li>
-                </ul>
+            {selectedOptions.length > 0 && (
+              <div className="mt-6 p-4 bg-gradient-to-r from-[#FF0671] to-[#ff3d8e] rounded-xl text-white">
+                <div className="text-sm opacity-90">Options sélectionnées</div>
+                <div className="text-2xl font-bold">+{totalOptions}€</div>
               </div>
             )}
+          </div>
 
-            {selectedMobileApp && (
-              <div className="mb-4">
-                <h4 className="font-semibold text-[#6a3f2f] mb-2">App Mobile IA :</h4>
-                <ul className="space-y-1">
-                  <li className="text-sm text-[#6a3f2f]">
-                    • {mobileAppOptions.find(a => a.id === selectedMobileApp)?.label} : Prix selon projet ({mobileAppOptions.find(a => a.id === selectedMobileApp)?.price}€)
-                  </li>
-                </ul>
+          {/* Colonne Centre - Device Mockups */}
+          <div className="flex flex-col items-center justify-center">
+            {/* Badge visites */}
+            <div className="mb-6 px-6 py-3 bg-gradient-to-r from-[#FF0671] to-[#ff3d8e] rounded-full shadow-lg">
+              <span className="text-white font-bold text-lg">{visitesParMois} VISITES/MOIS*</span>
+            </div>
+
+            {/* Device Mockups Container */}
+            <div className="relative w-full max-w-md h-[400px]">
+              {/* Laptop - Image 1.jpeg */}
+              <div className="absolute top-0 left-1/2 -translate-x-1/2 w-72 z-10">
+                <div className="bg-gray-800 rounded-t-lg p-2">
+                  <div className="bg-white rounded overflow-hidden">
+                    <Image
+                      src="/1.jpeg"
+                      alt="Site vitrine - Laptop"
+                      width={280}
+                      height={175}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
+                </div>
+                <div className="bg-gray-700 h-3 rounded-b-lg mx-8"></div>
+                <div className="bg-gray-600 h-1 rounded-b mx-16"></div>
               </div>
-            )}
+
+              {/* Tablet - Image 3.jpeg */}
+              <div className="absolute bottom-8 left-0 w-36 z-20">
+                <div className="bg-gray-800 rounded-2xl p-2">
+                  <div className="bg-white rounded-lg overflow-hidden">
+                    <Image
+                      src="/3.jpeg"
+                      alt="Site vitrine - Tablet"
+                      width={140}
+                      height={180}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Phone - Image 4.jpeg */}
+              <div className="absolute bottom-0 right-4 w-24 z-30">
+                <div className="bg-gray-900 rounded-3xl p-1.5">
+                  <div className="bg-white rounded-2xl overflow-hidden">
+                    <Image
+                      src="/4.jpeg"
+                      alt="Site vitrine - Mobile"
+                      width={90}
+                      height={160}
+                      className="w-full h-auto object-cover"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Note */}
+            <p className="mt-4 text-xs text-gray-500 text-center">
+              *Moyenne annuelle mensualisée sur 12 mois
+            </p>
+          </div>
+
+          {/* Colonne Droite - Mon offre personnalisée */}
+          <div className="bg-white rounded-2xl shadow-lg p-6">
+            <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+              <span className="w-8 h-8 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-full flex items-center justify-center text-white text-sm">✓</span>
+              Mon offre personnalisée
+            </h2>
+            
+            <div className="space-y-3">
+              {offrePersonnalisee.map((feature) => (
+                <div
+                  key={feature.id}
+                  className="flex items-center gap-3 p-3 bg-gradient-to-r from-orange-50 to-yellow-50 rounded-xl border border-orange-200"
+                >
+                  <div className="w-10 h-10 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-full flex items-center justify-center text-white shadow-md">
+                    <span className="text-lg">{feature.icon}</span>
+                  </div>
+                  <span className="font-medium text-gray-800">{feature.label}</span>
+                  <Check className="w-5 h-5 text-green-500 ml-auto" />
+                </div>
+              ))}
+            </div>
+
+            <div className="mt-6 p-4 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-xl text-white">
+              <div className="text-sm opacity-90">Inclus dans votre offre</div>
+              <div className="text-lg font-bold">8 fonctionnalités essentielles</div>
+            </div>
+          </div>
+        </div>
+
+        {/* Récapitulatif en bas */}
+        {selectedOptions.length > 0 && (
+          <div className="mt-8 bg-white rounded-2xl shadow-lg p-6">
+            <h3 className="text-lg font-bold text-gray-800 mb-4">Récapitulatif de vos options</h3>
+            <div className="flex flex-wrap gap-2">
+              {selectedOptions.map(id => {
+                const option = optionsDisponibles.find(o => o.id === id)
+                return option ? (
+                  <span 
+                    key={id}
+                    className="px-4 py-2 bg-pink-100 text-[#FF0671] rounded-full text-sm font-medium"
+                  >
+                    {option.label} (+{option.price}€)
+                  </span>
+                ) : null
+              })}
+            </div>
+            <div className="mt-4 pt-4 border-t flex items-center justify-between">
+              <span className="text-gray-600">Total des options supplémentaires :</span>
+              <span className="text-2xl font-bold text-[#FF0671]">{totalOptions}€</span>
+            </div>
           </div>
         )}
       </div>
