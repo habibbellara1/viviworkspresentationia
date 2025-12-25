@@ -4,8 +4,8 @@ import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Plus, Check } from "lucide-react"
 
-// Options disponibles (colonne gauche)
-const optionsDisponibles = [
+// Options par défaut (colonne gauche)
+const defaultOptionsDisponibles = [
   { id: "logo", label: "Création du logo", price: 500 },
   { id: "agenda", label: "Agenda en ligne", price: 300 },
   { id: "crm", label: "CRM", price: 800 },
@@ -18,8 +18,8 @@ const optionsDisponibles = [
   { id: "multilingue", label: "Site multilingue", price: 800 },
 ]
 
-// Offre personnalisée (colonne droite) - inclus par défaut
-const offrePersonnalisee = [
+// Offre personnalisée par défaut (colonne droite)
+const defaultOffrePersonnalisee = [
   { id: "responsive", label: "Responsive design", icon: "📱" },
   { id: "seo", label: "Référencement naturel", icon: "🔍" },
   { id: "ssl", label: "Navigation sécurisée", icon: "🔒" },
@@ -30,12 +30,38 @@ const offrePersonnalisee = [
   { id: "formation", label: "Formation incluse", icon: "🎓" },
 ]
 
+interface OptionItem {
+  id: string
+  label: string
+  price: number
+}
+
+interface FeatureItem {
+  id: string
+  label: string
+  icon: string
+}
+
 export function CaracteristiquesContent() {
+  const [optionsDisponibles, setOptionsDisponibles] = useState<OptionItem[]>(defaultOptionsDisponibles)
+  const [offrePersonnalisee, setOffrePersonnalisee] = useState<FeatureItem[]>(defaultOffrePersonnalisee)
   const [selectedOptions, setSelectedOptions] = useState<string[]>([])
-  const [visitesParMois, setVisitesParMois] = useState(100)
+  const [visitesParMois] = useState(100)
 
   useEffect(() => {
-    // Charger les sélections depuis localStorage
+    // Charger la config depuis localStorage
+    const savedConfig = localStorage.getItem('viviworks-caracteristiques-config')
+    if (savedConfig) {
+      try {
+        const config = JSON.parse(savedConfig)
+        setOptionsDisponibles(config.options || defaultOptionsDisponibles)
+        setOffrePersonnalisee(config.features || defaultOffrePersonnalisee)
+      } catch (error) {
+        console.error('Erreur lors du chargement de la config:', error)
+      }
+    }
+
+    // Charger les sélections
     const saved = localStorage.getItem('caracteristiques-options')
     if (saved) {
       setSelectedOptions(JSON.parse(saved))
