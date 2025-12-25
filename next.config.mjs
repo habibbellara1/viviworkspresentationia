@@ -1,8 +1,5 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
@@ -24,6 +21,12 @@ const nextConfig = {
       {
         protocol: 'https',
         hostname: 'www.wakeupacademy.fr',
+        port: '',
+        pathname: '/**',
+      },
+      {
+        protocol: 'https',
+        hostname: 'www.ovh.com',
         port: '',
         pathname: '/**',
       },

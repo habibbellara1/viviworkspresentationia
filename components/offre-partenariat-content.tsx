@@ -249,7 +249,7 @@ export function OffrePartenariatContent() {
                       </div>
                     </div>
 
-                    {/* Prix offre (0€) ou prix normal */}
+                    {/* Prix offre (0€) - Apparaît seulement quand offert */}
                     <div className="min-w-[80px] flex justify-center">
                       {isOffered ? (
                         <span 
@@ -259,21 +259,14 @@ export function OffrePartenariatContent() {
                         >
                           0€
                         </span>
-                      ) : item.canBeOffered ? (
-                        <span 
-                          className="inline-block px-4 py-1 rounded-full border-2 border-dashed border-gray-300 text-gray-400 font-medium text-sm cursor-pointer hover:border-[#FF0671] hover:text-[#FF0671] transition-colors"
-                          onClick={() => toggleOffer(item.id)}
-                        >
-                          Offrir
-                        </span>
-                      ) : (
+                      ) : !item.canBeOffered ? (
                         <span 
                           className="inline-block px-4 py-1 rounded-full text-white font-bold text-sm"
                           style={{ backgroundColor: "#FF0671" }}
                         >
                           {item.price}€
                         </span>
-                      )}
+                      ) : null}
                     </div>
 
                     {/* Périodicité */}
@@ -360,7 +353,7 @@ export function OffrePartenariatContent() {
             {offeredItems.size === 0 && (
               <div className="mt-6 p-4 bg-blue-50 rounded-lg border border-blue-200">
                 <p className="text-sm text-blue-700">
-                  💡 <strong>Astuce :</strong> Cliquez sur &quot;Offrir&quot; pour offrir un service au client.
+                  💡 <strong>Astuce :</strong> Cliquez sur un prix pour l&apos;offrir au client.
                 </p>
               </div>
             )}
