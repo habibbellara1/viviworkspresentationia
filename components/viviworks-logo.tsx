@@ -31,7 +31,7 @@ export function ViviworksLogo({ size = "md", showTagline = true, className = "" 
       {/* Logo image */}
       <div className={`relative ${sizeClasses[size]} ${showTagline ? 'mb-2' : ''}`}>
         <Image
-          src="/logo.png"
+          src="/vivi.png"
           alt="Viviworks Digital Marketing"
           width={80}
           height={80}
@@ -43,10 +43,10 @@ export function ViviworksLogo({ size = "md", showTagline = true, className = "" 
       {/* Texte du logo - seulement si showTagline est true */}
       {showTagline && (
         <div className="text-center">
-          <div className={`font-bold uppercase tracking-wide text-gray-800 ${textSizes[size]}`}>
+          <div className={`font-bold uppercase tracking-wide text-black ${textSizes[size]}`}>
             VIVIWORKS
           </div>
-          <div className={`font-medium uppercase tracking-wide text-gray-500 text-xs ${size === "sm" ? "text-xs" : size === "md" ? "text-xs" : "text-sm"}`}>
+          <div className={`font-medium uppercase tracking-wide text-[#FF0671] text-xs ${size === "sm" ? "text-xs" : size === "md" ? "text-xs" : "text-sm"}`}>
             DIGITAL MARKETING
           </div>
         </div>

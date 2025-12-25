@@ -87,10 +87,10 @@ const slides = [
               icon: "🤝",
             },
           ].map((service, index) => (
-            <Card key={index} className="bg-white border border-gray-200 hover:border-[#4fafc4] hover:shadow-lg transition-all duration-300">
+            <Card key={index} className="bg-white border border-gray-200 hover:border-[#FF0671] hover:shadow-lg transition-all duration-300">
               <CardContent className="p-4 md:p-6 text-center">
                 <div className="text-2xl md:text-3xl mb-2 md:mb-3">{service.icon}</div>
-                <h3 className="font-bold text-[#804d3b] mb-2 text-sm md:text-base">{service.title}</h3>
+                <h3 className="font-bold text-black mb-2 text-sm md:text-base">{service.title}</h3>
                 <p className="text-xs md:text-sm text-gray-600">{service.desc}</p>
               </CardContent>
             </Card>
@@ -100,7 +100,7 @@ const slides = [
         <div className="bg-white border border-gray-200 rounded-2xl p-4 md:p-8 shadow-lg">
           <div className="flex flex-col lg:flex-row items-center gap-6 md:gap-8">
             <div className="flex-1">
-              <h3 className="text-xl md:text-2xl font-bold mb-4 text-[#804d3b]">ViviworksDiffusion</h3>
+              <h3 className="text-xl md:text-2xl font-bold mb-4 text-black">ViviworksDiffusion</h3>
               <p className="text-gray-600 leading-relaxed text-sm md:text-base">
                 L'outil créé par viviworks vous permet de simplifier la gestion de votre présence internet grâce à une
                 solution centralisée des mises à jour de vos informations. Vous pouvez diffuser vos coordonnées sur les
@@ -112,7 +112,7 @@ const slides = [
                 communication web.
               </p>
             </div>
-            <div className="w-full lg:w-80 h-48 md:h-60 bg-gradient-to-br from-[#804d3b] to-[#4fafc4] rounded-xl flex items-center justify-center shadow-lg">
+            <div className="w-full lg:w-80 h-48 md:h-60 bg-gradient-to-br from-black to-[#FF0671] rounded-xl flex items-center justify-center shadow-lg">
               <div className="text-white text-center">
                 <div className="text-3xl md:text-4xl mb-2">🌐</div>
                 <div className="font-bold text-sm md:text-base">ViviworksDiffusion</div>
