@@ -172,9 +172,14 @@ export function AppSidebar({ onSectionChange, onLogout, currentUser }: AppSideba
               </div>
               
               <div className="flex-1 min-w-0">
-                <h1 className="text-white font-bold text-lg md:text-xl tracking-tight">
+                <a 
+                  href="https://www.viviworks.ai/" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-white font-bold text-lg md:text-xl tracking-tight hover:underline cursor-pointer"
+                >
                   viviworks<span className="text-white/70">.ia</span>
-                </h1>
+                </a>
                 <p className="text-white/60 text-xs hidden sm:block">Digital Marketing</p>
               </div>
             </div>

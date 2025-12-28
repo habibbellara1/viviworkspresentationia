@@ -353,7 +353,7 @@ export function EntrepriseFormSimple() {
               <Button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="bg-[#804d3b] hover:bg-[#6a3f2f] text-white px-8 py-3 text-lg font-semibold mr-4"
+                className="bg-[#e91e8c] hover:bg-[#d11a7a] text-white px-8 py-3 text-lg font-semibold mr-4"
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
@@ -383,7 +383,7 @@ export function EntrepriseFormSimple() {
                   // Afficher un message de confirmation
                   toast.success("Informations confirmées ! Vous pouvez maintenant consulter l'offre de partenariat.")
                 }}
-                className="bg-[#4fafc4] hover:bg-[#3d8ba0] text-white px-8 py-3 text-lg font-semibold"
+                className="bg-[#f5a623] hover:bg-[#e09520] text-white px-8 py-3 text-lg font-semibold"
               >
                 <span>Confirmer</span>
               </Button>
