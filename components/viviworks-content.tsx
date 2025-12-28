@@ -15,7 +15,7 @@ const slides = [
         <div className="flex justify-center">
           <div className="w-full max-w-4xl">
             <Image
-              src="/Nos expertises.png"
+              src="/p1.jpeg"
               alt="Nos expertises - Services et compétences de Viviworks"
               width={1200}
               height={800}
@@ -131,7 +131,7 @@ const slides = [
         <div className="flex justify-center">
           <div className="w-full max-w-4xl">
             <Image
-              src="/images/nos-outils-preferes-white.png"
+              src="/aaa.png"
               alt="Nos outils préférés - Technologies et plateformes utilisées sur fond blanc"
               width={1200}
               height={800}
