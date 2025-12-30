@@ -37,7 +37,8 @@ export function CaracteristiquesContent() {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([])
   const [visitesParMois] = useState(100)
 
-  useEffect(() => {
+  // Fonction pour charger la configuration
+  const loadConfig = () => {
     const savedConfig = localStorage.getItem('viviworks-caracteristiques-config')
     if (savedConfig) {
       try {
@@ -50,6 +51,30 @@ export function CaracteristiquesContent() {
     }
     const saved = localStorage.getItem('caracteristiques-options')
     if (saved) setSelectedOptions(JSON.parse(saved))
+  }
+
+  useEffect(() => {
+    loadConfig()
+    
+    // Écouter les changements de localStorage (depuis d'autres onglets ou pages)
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'viviworks-caracteristiques-config') {
+        loadConfig()
+      }
+    }
+    
+    // Écouter un événement personnalisé pour les changements dans le même onglet
+    const handleConfigUpdate = () => {
+      loadConfig()
+    }
+    
+    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener('caracteristiques-config-updated', handleConfigUpdate)
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('caracteristiques-config-updated', handleConfigUpdate)
+    }
   }, [])
 
   const toggleOption = (optionId: string) => {

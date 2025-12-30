@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { Check, ChevronLeft, ChevronRight } from "lucide-react"
+import { ChevronLeft, ChevronRight } from "lucide-react"
 
 interface PricingItem {
   id: string
@@ -89,40 +89,44 @@ const defaultPricingItems: PricingItem[] = [
   }
 ]
 
-const durations = ["12 MOIS", "24 MOIS", "36 MOIS", "48 MOIS", "60 MOIS"]
+const durations = ["12 MOIS"]
 
 export function OffrePartenariatContent() {
   const [pricingItems, setPricingItems] = useState<PricingItem[]>(defaultPricingItems)
-  const [selectedDuration, setSelectedDuration] = useState("60 MOIS")
+  const [selectedDuration, setSelectedDuration] = useState("12 MOIS")
   const [currentPage, setCurrentPage] = useState(0)
   const [offeredItems, setOfferedItems] = useState<Set<string>>(new Set())
+  const [isOffreActive, setIsOffreActive] = useState(false)
 
-  // Charger la configuration depuis localStorage
-  useEffect(() => {
+  // Fonction pour charger la configuration
+  const loadPricingConfig = () => {
     const savedPricing = localStorage.getItem('viviworks-offre-pricing')
     if (savedPricing) {
       try {
         const pricing = JSON.parse(savedPricing)
         if (pricing.items) {
-          // Merger avec les descriptions complètes par défaut
-          const mergedItems = defaultPricingItems.map(defaultItem => {
-            const savedItem = pricing.items.find((i: PricingItem) => i.id === defaultItem.id)
-            if (savedItem) {
-              return {
-                ...defaultItem,
-                price: savedItem.price,
-                canBeOffered: savedItem.canBeOffered,
-                isOffered: savedItem.isOffered,
-                monthlyExtra: savedItem.monthlyExtra ?? defaultItem.monthlyExtra
-              }
+          // Utiliser les items sauvegardés directement (avec toutes les modifications)
+          const mergedItems = pricing.items.map((savedItem: PricingItem) => {
+            const defaultItem = defaultPricingItems.find(d => d.id === savedItem.id)
+            return {
+              ...savedItem,
+              // Garder la description sauvegardée, sinon utiliser celle par défaut
+              description: savedItem.description || (defaultItem?.description ?? ''),
             }
-            return defaultItem
           })
+          
+          // Ajouter les items par défaut qui n'existent pas dans les sauvegardés
+          defaultPricingItems.forEach(defaultItem => {
+            if (!mergedItems.find((m: PricingItem) => m.id === defaultItem.id)) {
+              mergedItems.push(defaultItem)
+            }
+          })
+          
           setPricingItems(mergedItems)
           
           // Initialiser les items offerts par défaut
           const defaultOffered = new Set<string>()
-          mergedItems.forEach(item => {
+          mergedItems.forEach((item: PricingItem) => {
             if (item.isOffered) {
               defaultOffered.add(item.id)
             }
@@ -135,6 +139,31 @@ export function OffrePartenariatContent() {
       } catch (error) {
         console.error('Erreur lors du chargement de la configuration:', error)
       }
+    }
+  }
+
+  // Charger la configuration depuis localStorage
+  useEffect(() => {
+    loadPricingConfig()
+    
+    // Écouter les changements de localStorage
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key === 'viviworks-offre-pricing') {
+        loadPricingConfig()
+      }
+    }
+    
+    // Écouter un événement personnalisé pour les changements dans le même onglet
+    const handlePricingUpdate = () => {
+      loadPricingConfig()
+    }
+    
+    window.addEventListener('storage', handleStorageChange)
+    window.addEventListener('offre-pricing-updated', handlePricingUpdate)
+    
+    return () => {
+      window.removeEventListener('storage', handleStorageChange)
+      window.removeEventListener('offre-pricing-updated', handlePricingUpdate)
     }
   }, [])
 
@@ -151,6 +180,25 @@ export function OffrePartenariatContent() {
     setOfferedItems(newOffered)
   }
 
+  // Activer/désactiver l'offre de partenariat (barre tous les prix canBeOffered)
+  const toggleOffrePartenariat = () => {
+    if (isOffreActive) {
+      // Désactiver - vider les items offerts
+      setOfferedItems(new Set())
+      setIsOffreActive(false)
+    } else {
+      // Activer - offrir tous les items canBeOffered
+      const allOfferable = new Set<string>()
+      pricingItems.forEach(item => {
+        if (item.canBeOffered) {
+          allOfferable.add(item.id)
+        }
+      })
+      setOfferedItems(allOfferable)
+      setIsOffreActive(true)
+    }
+  }
+
   // Calculer les économies
   const calculateSavings = () => {
     let total = 0
@@ -161,20 +209,6 @@ export function OffrePartenariatContent() {
     })
     return total
   }
-
-  // Calculer le total mensuel
-  const getMonthlyPrice = () => {
-    const hebergement = pricingItems.find(i => i.id === "hebergement")
-    return hebergement ? hebergement.price : 134
-  }
-
-  // Calculer les frais uniques
-  const getOneTimePrice = () => {
-    const frais = pricingItems.find(i => i.id === "frais-mise-en-oeuvre")
-    return frais && !offeredItems.has(frais.id) ? frais.price : 0
-  }
-
-  const totalSavings = calculateSavings()
 
   return (
     <div className="max-w-6xl mx-auto px-4">
@@ -193,7 +227,17 @@ export function OffrePartenariatContent() {
                 </option>
               ))}
             </select>
-            <span className="text-lg font-bold text-gray-800">LOCALAUDIENCE</span>
+            <span className="text-lg font-bold text-gray-800">OFFRE VISIBILITÉ</span>
+            <button
+              onClick={toggleOffrePartenariat}
+              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${
+                isOffreActive 
+                  ? 'bg-[#f5a623] text-white' 
+                  : 'bg-[#e91e8c] text-white hover:bg-[#d11a7d]'
+              }`}
+            >
+              {isOffreActive ? 'Annuler l\'offre' : 'Offre de partenariat'}
+            </button>
           </div>
           
           <div className="flex items-center gap-12 text-sm font-semibold text-gray-600">

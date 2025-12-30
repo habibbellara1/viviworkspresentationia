@@ -64,11 +64,14 @@ const slides = [
                 Diffusez vos coordonnées sur Google My Business, Google Maps, Facebook, Waze...
               </p>
             </div>
-            <div className="w-full lg:w-48 h-24 md:h-32 bg-gradient-to-br from-black to-[#FF0671] rounded-xl flex items-center justify-center shadow-lg">
-              <div className="text-white text-center">
-                <div className="text-2xl md:text-3xl mb-1">🌐</div>
-                <div className="font-bold text-xs md:text-sm">ViviworksDiffusion</div>
-              </div>
+            <div className="w-full lg:w-48 h-24 md:h-32 rounded-xl overflow-hidden shadow-lg">
+              <Image
+                src="/WhatsApp Image 2025-12-26 at 09.34.06.jpeg"
+                alt="ViviworksDiffusion"
+                width={200}
+                height={130}
+                className="w-full h-full object-cover"
+              />
             </div>
           </div>
         </div>

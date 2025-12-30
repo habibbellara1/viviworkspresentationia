@@ -18,7 +18,7 @@ export function ShowroomContent() {
     {
       id: "stratelink",
       name: "Stratelink Global",
-      url: "#", // URL temporaire en attendant la confirmation du site officiel
+      url: "#",
       description: "Stratelink Global est un partenaire stratégique connectant Dubaï, l'Europe et l'Asie",
       image: "/stratelink.png",
       category: "Conseil & Développement"
@@ -46,6 +46,70 @@ export function ShowroomContent() {
       description: "Développement personnel des enfants et accompagnement parental basé sur les neurosciences",
       image: "/republichild.png",
       category: "Éducation & Parentalité"
+    },
+    {
+      id: "asr-nettoyage",
+      name: "ASR Nettoyage",
+      url: "https://www.asr-nettoyage.fr/agence-de-cergy/",
+      description: "Agence de nettoyage professionnel à Cergy",
+      image: "/asrNettoyage.png",
+      category: "Nettoyage"
+    },
+    {
+      id: "perf-renovation",
+      name: "Perf Rénovation",
+      url: "https://perf-renovation.fr/",
+      description: "Entreprise spécialisée dans la rénovation",
+      image: "/prefRénovation.png",
+      category: "Rénovation"
+    },
+    {
+      id: "miaosteria",
+      name: "Mia Osteria",
+      url: "https://www.miaosteria-cergy.com/",
+      description: "Restaurant italien à Cergy",
+      image: "/miaOsteria.png",
+      category: "Restauration"
+    },
+    {
+      id: "coiffurechicaboom",
+      name: "Coiffure Chica Boom",
+      url: "https://coiffurechicaboom.com/",
+      description: "Salon de coiffure",
+      image: "/CoiffurechicaBoom.png",
+      category: "Coiffure"
+    },
+    {
+      id: "mte95",
+      name: "MTE 95",
+      url: "https://mte95.fr/",
+      description: "Maintenance et travaux électriques",
+      image: "/Mte maintenance et traveau electriques .png",
+      category: "Électricité"
+    },
+    {
+      id: "plomberie-petroque",
+      name: "Plomberie Pétroque",
+      url: "https://plomberiepetroque.fr/",
+      description: "Services de plomberie professionnels",
+      image: "/plomberie pétroque.png",
+      category: "Plomberie"
+    },
+    {
+      id: "agence-principale-cergy",
+      name: "Agence Principale Cergy",
+      url: "https://www.agenceprincipalecergy.com/",
+      description: "Agence immobilière à Cergy",
+      image: "/agencePrincipalecergy.png",
+      category: "Immobilier"
+    },
+    {
+      id: "motrio",
+      name: "Motrio",
+      url: "https://www.motrio.fr/",
+      description: "Entretien auto, réparations et pièces de qualité",
+      image: "/Motrio.png",
+      category: "Automobile"
     }
   ]
 

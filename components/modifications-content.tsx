@@ -321,6 +321,10 @@ export function ModificationsContent() {
       duration: selectedDuration
     }
     localStorage.setItem('viviworks-offre-pricing', JSON.stringify(pricingData))
+    
+    // Émettre un événement pour notifier les autres composants
+    window.dispatchEvent(new Event('offre-pricing-updated'))
+    
     setHasChanges(false)
     toast.success("Configuration sauvegardée!")
   }
@@ -449,6 +453,10 @@ export function ModificationsContent() {
       features: offrePersonnalisee
     }
     localStorage.setItem('viviworks-caracteristiques-config', JSON.stringify(config))
+    
+    // Émettre un événement pour notifier les autres composants
+    window.dispatchEvent(new Event('caracteristiques-config-updated'))
+    
     toast.success("Options Caractéristiques sauvegardées!")
   }
 

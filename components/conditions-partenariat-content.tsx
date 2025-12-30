@@ -226,21 +226,14 @@ export function ConditionsPartenariatContent() {
                 <h3 className="text-lg font-semibold text-gray-800">
                   Résultats pour &quot;{domainName.replace(/^www\./, "").replace(/\.[a-z]+$/i, "")}&quot;
                 </h3>
-                <span className="text-xs text-gray-500">Prix OVH HT</span>
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {domainResults.map((result, index) => (
                   <div
                     key={index}
-                    className={`p-4 rounded-lg border-2 transition-all ${
-                      result.checking
-                        ? "border-gray-200 bg-gray-50"
-                        : result.error
-                        ? "border-orange-200 bg-orange-50"
-                        : result.available
-                        ? "border-green-300 bg-green-50 hover:shadow-md cursor-pointer"
-                        : "border-red-200 bg-red-50"
+                    className={`p-4 rounded-lg border-2 border-gray-300 bg-white transition-all ${
+                      result.available && !result.checking ? "hover:shadow-md cursor-pointer" : ""
                     }`}
                     onClick={() => {
                       if (result.available && !result.checking) {
@@ -263,49 +256,26 @@ export function ConditionsPartenariatContent() {
                         <XCircle className="w-5 h-5 text-red-500" />
                       )}
                     </div>
-                    <div className="flex items-center justify-between mt-2">
-                      <div>
-                        <p
-                          className={`text-sm ${
-                            result.checking
-                              ? "text-gray-500"
-                              : result.error
-                              ? "text-orange-600"
-                              : result.available
-                              ? "text-green-600"
-                              : "text-red-600"
-                          }`}
-                        >
-                          {result.checking
-                            ? "Vérification OVH..."
+                    <div className="mt-2">
+                      <p
+                        className={`text-sm font-medium ${
+                          result.checking
+                            ? "text-gray-500"
                             : result.error
-                            ? result.error
+                            ? "text-orange-600"
                             : result.available
-                            ? "Disponible ✓"
-                            : "Non disponible"}
-                        </p>
-                        {!result.checking && result.available && (
-                          <p className="text-xs text-gray-500 mt-1">
-                            Renouvellement: {result.renewPrice.toFixed(2)}€/an
-                          </p>
-                        )}
-                      </div>
-                      {!result.checking && !result.error && result.available && (
-                        <div className="text-right">
-                          <span className="text-xl font-bold text-[#FF0671]">
-                            {result.price.toFixed(2)}€
-                          </span>
-                          <span className="text-xs text-gray-500 block">1ère année</span>
-                        </div>
-                      )}
-                      {!result.checking && !result.available && !result.error && (
-                        <span className="text-sm text-gray-400 line-through">
-                          {result.price.toFixed(2)}€
-                        </span>
-                      )}
-                      {result.checking && (
-                        <span className="text-sm text-gray-400">--€</span>
-                      )}
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      >
+                        {result.checking
+                          ? "Vérification..."
+                          : result.error
+                          ? result.error
+                          : result.available
+                          ? "Disponible"
+                          : "Non disponible"}
+                      </p>
                     </div>
                     {!result.checking && result.available && !result.error && (
                       <div className="mt-3 flex items-center justify-center gap-1 text-xs text-[#FF0671] font-medium">
