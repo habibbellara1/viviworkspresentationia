@@ -38,15 +38,12 @@ export function EntrepriseFormSimple() {
     try {
       const pdf = new jsPDF("p", "mm", "a4")
       
-      // Titre
       pdf.setFontSize(20)
       pdf.text("FICHE ENTREPRISE", 105, 20, { align: "center" })
       
-      // Date
       pdf.setFontSize(12)
       pdf.text(`Générée le ${new Date().toLocaleDateString('fr-FR')}`, 105, 30, { align: "center" })
       
-      // Informations entreprise
       pdf.setFontSize(14)
       pdf.text("INFORMATIONS ENTREPRISE", 20, 50)
       
@@ -62,7 +59,6 @@ export function EntrepriseFormSimple() {
       y += 8
       pdf.text(`SIRET: ${formData.siret}`, 20, y)
       
-      // Adresse
       y += 15
       pdf.setFontSize(14)
       pdf.text("ADRESSE", 20, y)
@@ -75,7 +71,6 @@ export function EntrepriseFormSimple() {
       y += 8
       pdf.text(`Ville: ${formData.ville}`, 20, y)
       
-      // Contact
       y += 15
       pdf.setFontSize(14)
       pdf.text("CONTACT PRINCIPAL", 20, y)
@@ -111,7 +106,6 @@ export function EntrepriseFormSimple() {
   }
 
   const handleSubmit = async () => {
-    // Validation des champs obligatoires
     const requiredFields = [
       'enseigne', 'raisonSociale', 'formeSociete', 'codeAPE', 
       'siret', 'adresse', 'codePostal', 'ville', 
@@ -125,7 +119,7 @@ export function EntrepriseFormSimple() {
     })
     
     if (missingFields.length > 0) {
-      toast.error(`Veuillez remplir tous les champs obligatoires : ${missingFields.join(', ')}`)
+      toast.error(`Veuillez remplir tous les champs obligatoires`)
       return
     }
 
@@ -133,53 +127,42 @@ export function EntrepriseFormSimple() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto space-y-6 md:space-y-8 px-4">
-      <div className="text-center mb-6 md:mb-8">
-        <h1 className="text-2xl md:text-4xl font-bold text-gray-900 mb-2">Votre entreprise</h1>
-        <p className="text-sm md:text-base text-gray-600">
-          * Informations obligatoires à récupérer si on ne les a pas déjà
-        </p>
-      </div>
+    <div className="h-[calc(100vh-80px)] max-w-6xl mx-auto p-2 md:p-4">
+      <Card className="shadow-lg h-full flex flex-col">
+        <CardContent className="p-3 md:p-6 flex-1 flex flex-col">
+          <div className="text-center mb-3 md:mb-4 flex-shrink-0">
+            <h1 className="text-xl md:text-2xl font-bold text-gray-900 mb-1">Votre entreprise</h1>
+            <p className="text-xs md:text-sm text-gray-600">* Informations obligatoires</p>
+          </div>
 
-      <Card className="shadow-lg">
-        <CardContent className="p-4 md:p-8">
-          <div className="space-y-6 md:space-y-8">
+          <div className="flex-1 flex flex-col justify-between">
             {/* Informations de l'entreprise */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="enseigne" className="text-gray-600 text-sm md:text-base">
-                  Enseigne *
-                </Label>
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-2 md:gap-3">
+              <div className="space-y-1">
+                <Label htmlFor="enseigne" className="text-gray-600 text-xs">Enseigne *</Label>
                 <Input
                   id="enseigne"
                   value={formData.enseigne}
                   onChange={(e) => handleInputChange("enseigne", e.target.value)}
-                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-[#804d3b] bg-transparent text-sm md:text-base"
+                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="raisonSociale" className="text-gray-600 text-sm md:text-base">
-                  Raison sociale *
-                </Label>
+              <div className="space-y-1">
+                <Label htmlFor="raisonSociale" className="text-gray-600 text-xs">Raison sociale *</Label>
                 <Input
                   id="raisonSociale"
                   value={formData.raisonSociale}
                   onChange={(e) => handleInputChange("raisonSociale", e.target.value)}
-                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500 bg-transparent text-sm md:text-base"
+                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="formeSociete" className="text-gray-600 text-sm md:text-base">
-                  Forme de la société *
-                </Label>
-                <Select
-                  value={formData.formeSociete}
-                  onValueChange={(value) => handleInputChange("formeSociete", value)}
-                >
-                  <SelectTrigger className="border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500 bg-transparent text-sm md:text-base">
-                    <SelectValue placeholder="Sélectionnez la forme juridique" />
+              <div className="space-y-1">
+                <Label htmlFor="formeSociete" className="text-gray-600 text-xs">Forme société *</Label>
+                <Select value={formData.formeSociete} onValueChange={(value) => handleInputChange("formeSociete", value)}>
+                  <SelectTrigger className="border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8">
+                    <SelectValue placeholder="Sélectionnez" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="Auto entrepreneur">Auto entrepreneur</SelectItem>
@@ -190,188 +173,160 @@ export function EntrepriseFormSimple() {
                   </SelectContent>
                 </Select>
               </div>
-            </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="codeAPE" className="text-gray-600 text-sm md:text-base">
-                  Code APE *
-                </Label>
+              <div className="space-y-1">
+                <Label htmlFor="codeAPE" className="text-gray-600 text-xs">Code APE *</Label>
                 <Input
                   id="codeAPE"
                   value={formData.codeAPE}
                   onChange={(e) => handleInputChange("codeAPE", e.target.value)}
-                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500 bg-transparent text-sm md:text-base"
+                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="siret" className="text-gray-600 text-sm md:text-base">
-                  Siret *
-                </Label>
+              <div className="space-y-1">
+                <Label htmlFor="siret" className="text-gray-600 text-xs">Siret *</Label>
                 <Input
                   id="siret"
                   value={formData.siret}
                   onChange={(e) => handleInputChange("siret", e.target.value)}
-                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500 bg-transparent text-sm md:text-base"
+                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8"
                 />
               </div>
             </div>
 
             {/* Adresse */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-              <div className="space-y-2">
-                <Label htmlFor="adresse" className="text-gray-600 text-sm md:text-base">
-                  Adresse *
-                </Label>
+            <div className="grid grid-cols-3 gap-2 md:gap-3 mt-3">
+              <div className="space-y-1">
+                <Label htmlFor="adresse" className="text-gray-600 text-xs">Adresse *</Label>
                 <Input
                   id="adresse"
                   value={formData.adresse}
                   onChange={(e) => handleInputChange("adresse", e.target.value)}
-                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500 bg-transparent text-sm md:text-base"
+                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="codePostal" className="text-gray-600 text-sm md:text-base">
-                  Code postal *
-                </Label>
+              <div className="space-y-1">
+                <Label htmlFor="codePostal" className="text-gray-600 text-xs">Code postal *</Label>
                 <Input
                   id="codePostal"
                   value={formData.codePostal}
                   onChange={(e) => handleInputChange("codePostal", e.target.value)}
-                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500 bg-transparent text-sm md:text-base"
+                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8"
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="ville" className="text-gray-600 text-sm md:text-base">
-                  Ville *
-                </Label>
+              <div className="space-y-1">
+                <Label htmlFor="ville" className="text-gray-600 text-xs">Ville *</Label>
                 <Input
                   id="ville"
                   value={formData.ville}
                   onChange={(e) => handleInputChange("ville", e.target.value)}
-                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500 bg-transparent text-sm md:text-base"
+                  className="border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8"
                 />
               </div>
             </div>
 
             {/* Contact de l'entreprise */}
-            <div className="mt-8 md:mt-12">
-              <h2 className="text-xl md:text-2xl font-bold text-gray-900 mb-4 md:mb-6">Contact de l'entreprise</h2>
+            <div className="mt-4">
+              <h2 className="text-base md:text-lg font-bold text-gray-900 mb-2">Contact de l'entreprise</h2>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
-                <div className="space-y-2">
-                  <Label htmlFor="prenom" className="text-gray-600 text-sm md:text-base">
-                    Prénom *
-                  </Label>
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-2 md:gap-3">
+                <div className="space-y-1">
+                  <Label htmlFor="prenom" className="text-gray-600 text-xs">Prénom *</Label>
                   <Input
                     id="prenom"
                     value={formData.prenom}
                     onChange={(e) => handleInputChange("prenom", e.target.value)}
-                    className="border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500 bg-transparent text-sm md:text-base"
+                    className="border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="nom" className="text-gray-600 text-sm md:text-base">
-                    Nom *
-                  </Label>
+                <div className="space-y-1">
+                  <Label htmlFor="nom" className="text-gray-600 text-xs">Nom *</Label>
                   <Input
                     id="nom"
                     value={formData.nom}
                     onChange={(e) => handleInputChange("nom", e.target.value)}
-                    className="border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500 bg-transparent text-sm md:text-base"
+                    className="border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="dateNaissance" className="text-gray-600 text-sm md:text-base">
-                    Date de naissance
-                  </Label>
+                <div className="space-y-1">
+                  <Label htmlFor="dateNaissance" className="text-gray-600 text-xs">Date naissance</Label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
                     <Input
                       id="dateNaissance"
                       type="date"
                       value={formData.dateNaissance}
                       onChange={(e) => handleInputChange("dateNaissance", e.target.value)}
-                      className="pl-10 border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500 bg-transparent text-sm md:text-base"
+                      className="pl-7 border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8"
                     />
                   </div>
                 </div>
-              </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6 mt-4 md:mt-6">
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-gray-600 text-sm md:text-base">
-                    Email *
-                  </Label>
+                <div className="space-y-1">
+                  <Label htmlFor="email" className="text-gray-600 text-xs">Email *</Label>
                   <Input
                     id="email"
                     type="email"
                     value={formData.email}
                     onChange={(e) => handleInputChange("email", e.target.value)}
-                    className="border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500 bg-transparent text-sm md:text-base"
+                    className="border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="telephone" className="text-gray-600 text-sm md:text-base">
-                    Téléphone *
-                  </Label>
+                <div className="space-y-1">
+                  <Label htmlFor="telephone" className="text-gray-600 text-xs">Téléphone *</Label>
                   <Input
                     id="telephone"
                     type="tel"
                     value={formData.telephone}
                     onChange={(e) => handleInputChange("telephone", e.target.value)}
-                    className="border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500 bg-transparent text-sm md:text-base"
+                    className="border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8"
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="dateCreation" className="text-gray-600 text-sm md:text-base">
-                    Date de création
-                  </Label>
+                <div className="space-y-1">
+                  <Label htmlFor="dateCreation" className="text-gray-600 text-xs">Date création</Label>
                   <div className="relative">
-                    <Calendar className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
+                    <Calendar className="absolute left-2 top-1/2 transform -translate-y-1/2 w-3 h-3 text-gray-400" />
                     <Input
                       id="dateCreation"
                       type="date"
                       value={formData.dateCreation}
                       onChange={(e) => handleInputChange("dateCreation", e.target.value)}
-                      className="pl-10 border-0 border-b-2 border-gray-300 rounded-none focus:border-blue-500 bg-transparent text-sm md:text-base"
+                      className="pl-7 border-0 border-b-2 border-gray-300 rounded-none focus:border-[#e91e8c] bg-transparent text-xs h-8"
                     />
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* Bouton de génération PDF */}
-            <div className="mt-8 md:mt-12 text-center">
+            {/* Boutons */}
+            <div className="mt-4 text-center flex-shrink-0">
               <Button
                 onClick={handleSubmit}
                 disabled={isSubmitting}
-                className="bg-[#e91e8c] hover:bg-[#d11a7a] text-white px-8 py-3 text-lg font-semibold mr-4"
+                className="bg-[#e91e8c] hover:bg-[#d11a7a] text-white px-6 py-2 text-sm font-semibold mr-3"
               >
                 {isSubmitting ? (
                   <div className="flex items-center gap-2">
-                    <Loader2 className="w-5 h-5 animate-spin" />
-                    <span>Génération en cours...</span>
+                    <Loader2 className="w-4 h-4 animate-spin" />
+                    <span>Génération...</span>
                   </div>
                 ) : (
                   <div className="flex items-center gap-2">
-                    <Download className="w-5 h-5" />
+                    <Download className="w-4 h-4" />
                     <span>Générer PDF</span>
                   </div>
                 )}
               </Button>
               
-              {/* Bouton Confirmer pour envoyer vers l'offre de partenariat */}
               <Button
                 onClick={() => {
-                  // Sauvegarder les informations dans localStorage pour les récupérer dans l'offre
                   localStorage.setItem('entreprise-info', JSON.stringify({
                     adresse: formData.adresse,
                     codePostal: formData.codePostal,
@@ -379,11 +334,9 @@ export function EntrepriseFormSimple() {
                     telephone: formData.telephone,
                     email: formData.email
                   }))
-                  
-                  // Afficher un message de confirmation
-                  toast.success("Informations confirmées ! Vous pouvez maintenant consulter l'offre de partenariat.")
+                  toast.success("Informations confirmées !")
                 }}
-                className="bg-[#f5a623] hover:bg-[#e09520] text-white px-8 py-3 text-lg font-semibold"
+                className="bg-[#f5a623] hover:bg-[#e09520] text-white px-6 py-2 text-sm font-semibold"
               >
                 <span>Confirmer</span>
               </Button>
@@ -393,4 +346,4 @@ export function EntrepriseFormSimple() {
       </Card>
     </div>
   )
-} 
+}
