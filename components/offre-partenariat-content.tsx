@@ -12,6 +12,7 @@ interface PricingItem {
   canBeOffered: boolean
   isOffered: boolean
   monthlyExtra?: number
+  offerPrice?: number
 }
 
 // Prix par défaut
@@ -277,36 +278,20 @@ export function OffrePartenariatContent() {
                         }`}>
                           {item.price}€
                         </span>
-                        
-                        {/* Extra mensuel si applicable */}
-                        {item.monthlyExtra && (
-                          <span className={`text-[10px] sm:text-xs mt-1 transition-all duration-300 ${
-                            isOffered ? 'line-through text-gray-400' : 'text-gray-500'
-                          }`}>
-                            + {item.monthlyExtra}€/mois
-                          </span>
-                        )}
                       </div>
                     </div>
 
-                    {/* Prix offre (0€) - Apparaît seulement quand offert */}
+                    {/* Prix offre - Apparaît seulement quand offert */}
                     <div className="min-w-[50px] sm:min-w-[80px] flex justify-center">
-                      {isOffered ? (
+                      {isOffered && (
                         <span 
                           className="inline-block px-3 py-1 rounded-full text-white font-bold text-xs sm:text-sm cursor-pointer"
                           style={{ backgroundColor: "#FF0671" }}
                           onClick={() => toggleOffer(item.id)}
                         >
-                          0€
+                          {item.offerPrice ?? 0}€
                         </span>
-                      ) : !item.canBeOffered ? (
-                        <span 
-                          className="inline-block px-3 py-1 rounded-full text-white font-bold text-xs sm:text-sm"
-                          style={{ backgroundColor: "#FF0671" }}
-                        >
-                          {item.price}€
-                        </span>
-                      ) : null}
+                      )}
                     </div>
 
                     {/* Périodicité */}

@@ -37,12 +37,12 @@ interface PricingItem {
   canBeOffered: boolean
   isOffered: boolean
   monthlyExtra?: number
+  offerPrice?: number
 }
 
 interface OptionItem {
   id: string
   label: string
-  price: number
 }
 
 interface FeatureItem {
@@ -84,7 +84,8 @@ const defaultPricingItems: PricingItem[] = [
     price: 2350,
     periodicity: "Versement unique",
     canBeOffered: true,
-    isOffered: false
+    isOffered: false,
+    offerPrice: 0
   },
   {
     id: "nom-domaine",
@@ -93,7 +94,8 @@ const defaultPricingItems: PricingItem[] = [
     price: 30,
     periodicity: "Annuel",
     canBeOffered: true,
-    isOffered: false
+    isOffered: false,
+    offerPrice: 0
   },
   {
     id: "hebergement",
@@ -112,7 +114,8 @@ const defaultPricingItems: PricingItem[] = [
     price: 432,
     periodicity: "Versement unique",
     canBeOffered: true,
-    isOffered: false
+    isOffered: false,
+    offerPrice: 0
   },
   {
     id: "formation",
@@ -121,7 +124,8 @@ const defaultPricingItems: PricingItem[] = [
     price: 95,
     periodicity: "Versement unique",
     canBeOffered: true,
-    isOffered: false
+    isOffered: false,
+    offerPrice: 0
   },
   {
     id: "frais-mise-en-oeuvre",
@@ -139,16 +143,16 @@ const durations = ["12 MOIS", "24 MOIS", "36 MOIS", "48 MOIS", "60 MOIS"]
 
 // Options par défaut de la page Caractéristiques
 const defaultOptionsDisponibles: OptionItem[] = [
-  { id: "logo", label: "Création du logo", price: 500 },
-  { id: "agenda", label: "Agenda en ligne", price: 300 },
-  { id: "crm", label: "CRM", price: 800 },
-  { id: "visio", label: "RDV en visioconférence", price: 200 },
-  { id: "photos", label: "Reportage photos", price: 600 },
-  { id: "video", label: "Vidéo de présentation", price: 1200 },
-  { id: "chatbot", label: "Chatbot IA", price: 1990 },
-  { id: "newsletter", label: "Newsletter automatisée", price: 400 },
-  { id: "ecommerce", label: "Module e-commerce", price: 1500 },
-  { id: "multilingue", label: "Site multilingue", price: 800 },
+  { id: "logo", label: "Création du logo" },
+  { id: "agenda", label: "Agenda en ligne" },
+  { id: "crm", label: "CRM" },
+  { id: "visio", label: "RDV en visioconférence" },
+  { id: "photos", label: "Reportage photos" },
+  { id: "video", label: "Vidéo de présentation" },
+  { id: "chatbot", label: "Chatbot IA" },
+  { id: "newsletter", label: "Newsletter automatisée" },
+  { id: "ecommerce", label: "Module e-commerce" },
+  { id: "multilingue", label: "Site multilingue" },
 ]
 
 const defaultOffrePersonnalisee: FeatureItem[] = [
@@ -371,8 +375,7 @@ export function ModificationsContent() {
     const newId = `option-${Date.now()}`
     const newOption: OptionItem = {
       id: newId,
-      label: "Nouvelle option",
-      price: 0
+      label: "Nouvelle option"
     }
     setOptionsDisponibles([...optionsDisponibles, newOption])
     setEditingOption(newId)
@@ -622,10 +625,19 @@ export function ModificationsContent() {
                         <Switch checked={item.canBeOffered} onCheckedChange={(v) => handleFieldChange(item.id, 'canBeOffered', v)} />
                       </div>
                       {item.canBeOffered && (
-                        <div className="flex items-center justify-between">
-                          <Label className="text-sm font-medium text-[#FF0671]">Offrir par défaut</Label>
-                          <Switch checked={item.isOffered} onCheckedChange={(v) => handleFieldChange(item.id, 'isOffered', v)} className="data-[state=checked]:bg-[#FF0671]" />
-                        </div>
+                        <>
+                          <div className="flex items-center justify-between">
+                            <Label className="text-sm font-medium text-[#FF0671]">Offrir par défaut</Label>
+                            <Switch checked={item.isOffered} onCheckedChange={(v) => handleFieldChange(item.id, 'isOffered', v)} className="data-[state=checked]:bg-[#FF0671]" />
+                          </div>
+                          <div className="space-y-1">
+                            <Label className="text-sm font-medium text-[#f5a623]">Prix offre</Label>
+                            <div className="flex gap-2">
+                              <Input type="number" value={item.offerPrice ?? 0} onChange={(e) => handleFieldChange(item.id, 'offerPrice', parseFloat(e.target.value) || 0)} min="0" />
+                              <span className="flex items-center px-3 bg-orange-100 rounded-md text-orange-600">€</span>
+                            </div>
+                          </div>
+                        </>
                       )}
                     </div>
                   </div>
@@ -710,16 +722,6 @@ export function ModificationsContent() {
                         className="flex-1"
                         placeholder="Nom de l'option"
                       />
-                      <div className="flex items-center gap-1">
-                        <Input
-                          type="number"
-                          value={option.price}
-                          onChange={(e) => handleOptionChange(option.id, 'price', parseFloat(e.target.value) || 0)}
-                          className="w-24"
-                          min="0"
-                        />
-                        <span className="text-gray-500">€</span>
-                      </div>
                       <Button variant="ghost" size="sm" onClick={() => setEditingOption(null)}>
                         <Check className="w-4 h-4 text-green-600" />
                       </Button>
@@ -729,7 +731,6 @@ export function ModificationsContent() {
                       <span className="flex-1 font-medium text-gray-800 cursor-pointer hover:text-[#FF0671]" onClick={() => setEditingOption(option.id)}>
                         {option.label}
                       </span>
-                      <span className="font-bold text-[#FF0671]">+{option.price}€</span>
                       <Button variant="ghost" size="sm" onClick={() => setEditingOption(option.id)}>
                         <Eye className="w-4 h-4" />
                       </Button>
@@ -818,9 +819,8 @@ export function ModificationsContent() {
                   <h4 className="font-semibold mb-3 text-[#FF0671]">Options disponibles ({optionsDisponibles.length})</h4>
                   <div className="space-y-2">
                     {optionsDisponibles.slice(0, 5).map(opt => (
-                      <div key={opt.id} className="flex justify-between text-sm">
+                      <div key={opt.id} className="text-sm">
                         <span className="text-gray-300">{opt.label}</span>
-                        <span className="text-[#FF0671]">+{opt.price}€</span>
                       </div>
                     ))}
                     {optionsDisponibles.length > 5 && (

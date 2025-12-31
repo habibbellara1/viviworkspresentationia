@@ -96,6 +96,42 @@ const slides = [
       </div>
     ),
   },
+  {
+    id: 4,
+    title: "Agences en France",
+    content: (
+      <div className="h-full flex items-center justify-center">
+        <div className="w-full max-w-5xl">
+          <Image
+            src="/WhatsApp Image 2025-12-30 at 09.26.02 (2).jpeg"
+            alt="Agences en France - Nos implantations"
+            width={1200}
+            height={800}
+            className="w-full h-auto max-h-[65vh] object-contain rounded-2xl shadow-lg"
+            priority
+          />
+        </div>
+      </div>
+    ),
+  },
+  {
+    id: 5,
+    title: "Un partenariat clé en main avec viviworks.ai",
+    content: (
+      <div className="h-full flex items-center justify-center">
+        <div className="w-full max-w-5xl">
+          <Image
+            src="/WhatsApp Image 2025-12-31 at 15.54.11.jpeg"
+            alt="Un partenariat clé en main avec viviworks.ai"
+            width={1200}
+            height={800}
+            className="w-full h-auto max-h-[65vh] object-contain rounded-2xl shadow-lg"
+            priority
+          />
+        </div>
+      </div>
+    ),
+  },
 ]
 
 export function ViviworksContent() {

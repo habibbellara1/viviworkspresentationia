@@ -15,7 +15,36 @@ const conditions = [
   "Adhérer à notre programme de parrainage",
 ]
 
-const domainExtensions = [".fr", ".com", ".net", ".org", ".eu", ".io", ".co"]
+const domainExtensions = [".fr", ".com", ".net", ".org", ".eu", ".io", ".co", ".ai", ".tech", ".dev", ".app"]
+
+// Fonction pour extraire l'extension d'un domaine
+const extractDomainParts = (input: string): { name: string; extension: string | null } => {
+  const cleanInput = input.replace(/^www\./, "").trim().toLowerCase()
+  
+  // Chercher si une extension connue est présente
+  for (const ext of domainExtensions) {
+    if (cleanInput.endsWith(ext)) {
+      return {
+        name: cleanInput.slice(0, -ext.length),
+        extension: ext
+      }
+    }
+  }
+  
+  // Vérifier aussi les extensions non listées (format .xxx)
+  const match = cleanInput.match(/^(.+)(\.[a-z]{2,})$/i)
+  if (match) {
+    return {
+      name: match[1],
+      extension: match[2]
+    }
+  }
+  
+  return {
+    name: cleanInput,
+    extension: null
+  }
+}
 
 interface DomainResult {
   domain: string
@@ -85,19 +114,18 @@ export function ConditionsPartenariatContent() {
   const handleDomainSearch = async () => {
     if (!domainName.trim()) return
 
-    const cleanDomain = domainName
-      .replace(/^www\./, "")
-      .replace(/\.[a-z]+$/i, "")
-      .trim()
-      .toLowerCase()
+    const { name: cleanDomain, extension: userExtension } = extractDomainParts(domainName)
 
     if (!cleanDomain) return
 
     setIsSearching(true)
     setHasSearched(true)
 
+    // Si l'utilisateur a spécifié une extension, ne vérifier que celle-ci
+    const extensionsToCheck = userExtension ? [userExtension] : domainExtensions
+
     // Initialiser les résultats avec état "checking"
-    const initialResults: DomainResult[] = domainExtensions.map((ext) => ({
+    const initialResults: DomainResult[] = extensionsToCheck.map((ext) => ({
       domain: cleanDomain + ext,
       available: null,
       checking: true,
@@ -107,8 +135,8 @@ export function ConditionsPartenariatContent() {
     setDomainResults(initialResults)
 
     // Vérifier chaque extension via l'API OVH
-    for (let i = 0; i < domainExtensions.length; i++) {
-      const fullDomain = cleanDomain + domainExtensions[i]
+    for (let i = 0; i < extensionsToCheck.length; i++) {
+      const fullDomain = cleanDomain + extensionsToCheck[i]
       const result = await checkDomainWithOVH(fullDomain)
 
       setDomainResults((prev) =>
@@ -224,7 +252,7 @@ export function ConditionsPartenariatContent() {
             <div className="mt-8 space-y-3">
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-lg font-semibold text-gray-800">
-                  Résultats pour &quot;{domainName.replace(/^www\./, "").replace(/\.[a-z]+$/i, "")}&quot;
+                  Résultats pour &quot;{domainName.replace(/^www\./, "").trim().toLowerCase()}&quot;
                 </h3>
               </div>
 
@@ -278,9 +306,9 @@ export function ConditionsPartenariatContent() {
                       </p>
                     </div>
                     {!result.checking && result.available && !result.error && (
-                      <div className="mt-3 flex items-center justify-center gap-1 text-xs text-[#FF0671] font-medium">
-                        <span>Commander sur OVH</span>
-                        <ExternalLink className="w-3 h-3" />
+                      <div className="mt-3 flex items-center justify-center gap-1 text-xs text-green-600 font-medium">
+                        <CheckCircle className="w-3 h-3" />
+                        <span>Disponible à l'achat</span>
                       </div>
                     )}
                   </div>

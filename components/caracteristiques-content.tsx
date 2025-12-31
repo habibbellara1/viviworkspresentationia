@@ -5,16 +5,16 @@ import Image from "next/image"
 import { Plus, Check } from "lucide-react"
 
 const defaultOptionsDisponibles = [
-  { id: "logo", label: "Création du logo", price: 500 },
-  { id: "agenda", label: "Agenda en ligne", price: 300 },
-  { id: "crm", label: "CRM", price: 800 },
-  { id: "visio", label: "RDV visioconférence", price: 200 },
-  { id: "photos", label: "Reportage photos", price: 600 },
-  { id: "video", label: "Vidéo présentation", price: 1200 },
-  { id: "chatbot", label: "Chatbot IA", price: 1990 },
-  { id: "newsletter", label: "Newsletter", price: 400 },
-  { id: "ecommerce", label: "E-commerce", price: 1500 },
-  { id: "multilingue", label: "Multilingue", price: 800 },
+  { id: "logo", label: "Création du logo" },
+  { id: "agenda", label: "Agenda en ligne" },
+  { id: "crm", label: "CRM" },
+  { id: "visio", label: "RDV visioconférence" },
+  { id: "photos", label: "Reportage photos" },
+  { id: "video", label: "Vidéo présentation" },
+  { id: "chatbot", label: "Chatbot IA" },
+  { id: "newsletter", label: "Newsletter" },
+  { id: "ecommerce", label: "E-commerce" },
+  { id: "multilingue", label: "Multilingue" },
 ]
 
 const defaultOffrePersonnalisee = [
@@ -28,7 +28,7 @@ const defaultOffrePersonnalisee = [
   { id: "formation", label: "Formation", icon: "🎓" },
 ]
 
-interface OptionItem { id: string; label: string; price: number }
+interface OptionItem { id: string; label: string }
 interface FeatureItem { id: string; label: string; icon: string }
 
 export function CaracteristiquesContent() {
@@ -85,11 +85,6 @@ export function CaracteristiquesContent() {
     })
   }
 
-  const totalOptions = selectedOptions.reduce((sum, id) => {
-    const option = optionsDisponibles.find(o => o.id === id)
-    return sum + (option?.price || 0)
-  }, 0)
-
   return (
     <div className="h-[calc(100vh-80px)] bg-gradient-to-br from-gray-50 to-gray-100 p-2 md:p-3">
       <div className="max-w-7xl mx-auto h-full">
@@ -109,7 +104,7 @@ export function CaracteristiquesContent() {
                   <button
                     key={option.id}
                     onClick={() => toggleOption(option.id)}
-                    className={`w-full flex items-center justify-between p-2 rounded-lg border transition-all text-xs ${
+                    className={`w-full flex items-center p-2 rounded-lg border transition-all text-xs ${
                       isSelected ? 'border-[#FF0671] bg-pink-50' : 'border-gray-200 hover:border-[#FF0671]'
                     }`}
                   >
@@ -121,18 +116,10 @@ export function CaracteristiquesContent() {
                       </div>
                       <span className={isSelected ? 'text-[#FF0671]' : 'text-gray-700'}>{option.label}</span>
                     </div>
-                    <span className={`font-bold ${isSelected ? 'text-[#FF0671]' : 'text-gray-500'}`}>+{option.price}€</span>
                   </button>
                 )
               })}
             </div>
-
-            {selectedOptions.length > 0 && (
-              <div className="mt-2 p-2 bg-gradient-to-r from-[#FF0671] to-[#ff3d8e] rounded-lg text-white flex-shrink-0">
-                <div className="text-xs opacity-90">Total options</div>
-                <div className="text-lg font-bold">+{totalOptions}€</div>
-              </div>
-            )}
           </div>
 
           {/* Colonne Centre - Image */}
@@ -178,7 +165,7 @@ export function CaracteristiquesContent() {
 
             <div className="mt-2 p-2 bg-gradient-to-r from-orange-400 to-yellow-400 rounded-lg text-white flex-shrink-0">
               <div className="text-xs opacity-90">Inclus dans votre offre</div>
-              <div className="text-sm font-bold">8 fonctionnalités</div>
+              <div className="text-sm font-bold">{offrePersonnalisee.length} fonctionnalités</div>
             </div>
           </div>
         </div>
