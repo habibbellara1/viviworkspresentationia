@@ -18,7 +18,7 @@ export function ShowroomContent() {
     {
       id: "stratelink",
       name: "Stratelink Global",
-      url: "#",
+      url: "https://stratelink-global.com/",
       description: "Stratelink Global est un partenaire stratégique connectant Dubaï, l'Europe et l'Asie",
       image: "/stratelink.png",
       category: "Conseil & Développement"
