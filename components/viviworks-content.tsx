@@ -85,8 +85,8 @@ const slides = [
       <div className="h-full flex items-center justify-center">
         <div className="w-full max-w-5xl">
           <Image
-            src="/aaa.png"
-            alt="Nos outils préférés - Technologies et plateformes utilisées sur fond blanc"
+            src="/WhatsApp Image 2025-12-30 at 06.49.52.jpeg"
+            alt="Nos outils préférés - Technologies et plateformes utilisées"
             width={1200}
             height={800}
             className="w-full h-auto max-h-[65vh] object-contain rounded-2xl shadow-lg"

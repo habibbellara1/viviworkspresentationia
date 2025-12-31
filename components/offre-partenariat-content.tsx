@@ -168,6 +168,9 @@ export function OffrePartenariatContent() {
   }, [])
 
   const toggleOffer = (id: string) => {
+    // Ne rien faire si le mode offre n'est pas activé
+    if (!isOffreActive) return
+    
     const item = pricingItems.find(i => i.id === id)
     if (!item?.canBeOffered) return
     
@@ -180,21 +183,14 @@ export function OffrePartenariatContent() {
     setOfferedItems(newOffered)
   }
 
-  // Activer/désactiver l'offre de partenariat (barre tous les prix canBeOffered)
+  // Activer/désactiver le mode offre de partenariat
   const toggleOffrePartenariat = () => {
     if (isOffreActive) {
-      // Désactiver - vider les items offerts
+      // Désactiver le mode - vider les items offerts
       setOfferedItems(new Set())
       setIsOffreActive(false)
     } else {
-      // Activer - offrir tous les items canBeOffered
-      const allOfferable = new Set<string>()
-      pricingItems.forEach(item => {
-        if (item.canBeOffered) {
-          allOfferable.add(item.id)
-        }
-      })
-      setOfferedItems(allOfferable)
+      // Activer le mode (sans offrir automatiquement tous les items)
       setIsOffreActive(true)
     }
   }
@@ -269,10 +265,10 @@ export function OffrePartenariatContent() {
 
                   {/* Prix et périodicité */}
                   <div className="flex items-start gap-4 flex-shrink-0">
-                    {/* Budget HT - Cliquable si peut être offert */}
+                    {/* Budget HT - Cliquable seulement si mode offre actif et peut être offert */}
                     <div 
-                      className={`text-right min-w-[120px] ${item.canBeOffered ? 'cursor-pointer hover:opacity-80' : ''}`}
-                      onClick={() => item.canBeOffered && toggleOffer(item.id)}
+                      className={`text-right min-w-[120px] ${isOffreActive && item.canBeOffered ? 'cursor-pointer hover:opacity-80' : ''}`}
+                      onClick={() => toggleOffer(item.id)}
                     >
                       <div className="flex flex-col items-end">
                         {/* Prix original */}
