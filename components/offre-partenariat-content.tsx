@@ -207,15 +207,15 @@ export function OffrePartenariatContent() {
   }
 
   return (
-    <div className="max-w-6xl mx-auto px-4">
+    <div className="max-w-6xl mx-auto px-2 sm:px-4">
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
         {/* Header avec sélecteur de durée */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-gray-50">
-          <div className="flex items-center gap-4">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between px-3 sm:px-6 py-3 sm:py-4 border-b border-gray-200 bg-gray-50 gap-3">
+          <div className="flex flex-wrap items-center gap-2 sm:gap-4">
             <select
               value={selectedDuration}
               onChange={(e) => setSelectedDuration(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#FF0671] focus:border-transparent bg-white"
+              className="px-3 py-2 border border-gray-300 rounded-lg text-xs sm:text-sm font-medium focus:outline-none focus:ring-2 focus:ring-[#FF0671] focus:border-transparent bg-white"
             >
               {durations.map((duration) => (
                 <option key={duration} value={duration}>
@@ -223,54 +223,54 @@ export function OffrePartenariatContent() {
                 </option>
               ))}
             </select>
-            <span className="text-lg font-bold text-gray-800">OFFRE VISIBILITÉ</span>
+            <span className="text-sm sm:text-lg font-bold text-gray-800">OFFRE VISIBILITÉ</span>
             <button
               onClick={toggleOffrePartenariat}
-              className={`px-4 py-2 rounded-lg text-sm font-bold transition-all duration-300 ${
+              className={`px-3 py-2 rounded-lg text-xs sm:text-sm font-bold transition-all duration-300 ${
                 isOffreActive 
                   ? 'bg-[#f5a623] text-white' 
                   : 'bg-[#e91e8c] text-white hover:bg-[#d11a7d]'
               }`}
             >
-              {isOffreActive ? 'Annuler l\'offre' : 'Offre de partenariat'}
+              {isOffreActive ? 'Annuler' : 'Offre partenariat'}
             </button>
           </div>
           
-          <div className="flex items-center gap-12 text-sm font-semibold text-gray-600">
+          <div className="hidden sm:flex items-center gap-12 text-sm font-semibold text-gray-600">
             <span>Budget HT</span>
             <span>Périodicité</span>
           </div>
         </div>
 
         {/* Contenu du tableau de prix */}
-        <div className="p-6">
+        <div className="p-3 sm:p-6">
           {pricingItems.map((item) => {
             const isOffered = offeredItems.has(item.id)
             
             return (
-              <div key={item.id} className="mb-6 last:mb-0">
+              <div key={item.id} className="mb-4 sm:mb-6 last:mb-0">
                 {/* Titre de la catégorie */}
-                <h3 className="text-lg font-bold italic mb-3 text-[#FF0671]">
+                <h3 className="text-base sm:text-lg font-bold italic mb-2 sm:mb-3 text-[#FF0671]">
                   {item.category}
                 </h3>
 
-                {/* Item */}
-                <div className="flex items-start justify-between py-4 border-b border-gray-100">
+                {/* Item - Layout mobile vs desktop */}
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between py-3 sm:py-4 border-b border-gray-100 gap-3">
                   {/* Description */}
-                  <div className="flex-1 pr-8 max-w-[60%]">
-                    <p className="text-sm text-gray-700 whitespace-pre-line leading-relaxed">
+                  <div className="flex-1 sm:pr-8 sm:max-w-[60%]">
+                    <p className="text-xs sm:text-sm text-gray-700 whitespace-pre-line leading-relaxed">
                       {item.description}
                     </p>
                   </div>
 
-                  {/* Prix et périodicité */}
-                  <div className="flex items-start gap-4 flex-shrink-0">
+                  {/* Prix et périodicité - Mobile: horizontal compact */}
+                  <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4 flex-shrink-0 bg-gray-50 sm:bg-transparent p-2 sm:p-0 rounded-lg">
                     {/* Budget HT - Cliquable seulement si mode offre actif et peut être offert */}
                     <div 
-                      className={`text-right min-w-[120px] ${isOffreActive && item.canBeOffered ? 'cursor-pointer hover:opacity-80' : ''}`}
+                      className={`text-left sm:text-right min-w-[80px] sm:min-w-[120px] ${isOffreActive && item.canBeOffered ? 'cursor-pointer hover:opacity-80' : ''}`}
                       onClick={() => toggleOffer(item.id)}
                     >
-                      <div className="flex flex-col items-end">
+                      <div className="flex flex-col items-start sm:items-end">
                         {/* Prix original */}
                         <span className={`text-sm font-medium transition-all duration-300 ${
                           isOffered ? 'line-through text-gray-400' : 'text-gray-800'
@@ -280,20 +280,20 @@ export function OffrePartenariatContent() {
                         
                         {/* Extra mensuel si applicable */}
                         {item.monthlyExtra && (
-                          <span className={`text-xs mt-1 transition-all duration-300 ${
+                          <span className={`text-[10px] sm:text-xs mt-1 transition-all duration-300 ${
                             isOffered ? 'line-through text-gray-400' : 'text-gray-500'
                           }`}>
-                            + {item.monthlyExtra}€ / Mois pendant 12 mois
+                            + {item.monthlyExtra}€/mois
                           </span>
                         )}
                       </div>
                     </div>
 
                     {/* Prix offre (0€) - Apparaît seulement quand offert */}
-                    <div className="min-w-[80px] flex justify-center">
+                    <div className="min-w-[50px] sm:min-w-[80px] flex justify-center">
                       {isOffered ? (
                         <span 
-                          className="inline-block px-4 py-1 rounded-full text-white font-bold text-sm cursor-pointer"
+                          className="inline-block px-3 py-1 rounded-full text-white font-bold text-xs sm:text-sm cursor-pointer"
                           style={{ backgroundColor: "#FF0671" }}
                           onClick={() => toggleOffer(item.id)}
                         >
@@ -301,7 +301,7 @@ export function OffrePartenariatContent() {
                         </span>
                       ) : !item.canBeOffered ? (
                         <span 
-                          className="inline-block px-4 py-1 rounded-full text-white font-bold text-sm"
+                          className="inline-block px-3 py-1 rounded-full text-white font-bold text-xs sm:text-sm"
                           style={{ backgroundColor: "#FF0671" }}
                         >
                           {item.price}€
@@ -310,15 +310,10 @@ export function OffrePartenariatContent() {
                     </div>
 
                     {/* Périodicité */}
-                    <div className="text-right min-w-[100px]">
-                      <span className="text-gray-600 text-sm">
+                    <div className="text-right min-w-[70px] sm:min-w-[100px]">
+                      <span className="text-gray-600 text-xs sm:text-sm">
                         {item.periodicity}
                       </span>
-                      {item.periodicity === "Mensuel" && (
-                        <div className="text-[#FF0671] text-xs font-medium mt-1">
-                          Mensuel
-                        </div>
-                      )}
                     </div>
                   </div>
                 </div>
@@ -327,7 +322,7 @@ export function OffrePartenariatContent() {
           })}
 
           {/* Navigation pages */}
-          <div className="flex items-center justify-center gap-2 mt-6">
+          <div className="flex items-center justify-center gap-2 mt-4 sm:mt-6">
             <button
               onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
               className="p-2 rounded-full hover:bg-gray-100 transition-colors disabled:opacity-50"
