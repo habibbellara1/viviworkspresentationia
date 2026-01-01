@@ -110,6 +110,22 @@ export function ShowroomContent() {
       description: "Entretien auto, réparations et pièces de qualité",
       image: "/Motrio.png",
       category: "Automobile"
+    },
+    {
+      id: "ribbaclim",
+      name: "Ribbaclim",
+      url: "https://ribbaclim.com/",
+      description: "Services de climatisation professionnels",
+      image: "/Capture d'écran 2026-01-01 211055.png",
+      category: "Climatisation"
+    },
+    {
+      id: "everlink",
+      name: "Everlink",
+      url: "https://everlink.ch/",
+      description: "Solutions digitales en Suisse",
+      image: "/Capture d'écran 2026-01-01 211202.png",
+      category: "Digital"
     }
   ]
 
