@@ -190,19 +190,45 @@ export function ModificationsContent() {
   const [featureToDelete, setFeatureToDelete] = useState<string | null>(null)
   const [showDeleteOptionDialog, setShowDeleteOptionDialog] = useState(false)
   const [showDeleteFeatureDialog, setShowDeleteFeatureDialog] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
 
-  // Charger les prix sauvegardés depuis localStorage au montage
+  // Charger les prix depuis l'API (serveur) puis localStorage (fallback)
   useEffect(() => {
-    const savedPricing = localStorage.getItem('viviworks-offre-pricing')
-    if (savedPricing) {
+    const loadPricingConfig = async () => {
+      setIsLoading(true)
       try {
-        const pricing = JSON.parse(savedPricing)
-        setPricingItems(pricing.items || defaultPricingItems)
-        setSelectedDuration(pricing.duration || "60 MOIS")
+        // Essayer de charger depuis l'API (serveur)
+        const response = await fetch('/api/pricing-config')
+        if (response.ok) {
+          const serverConfig = await response.json()
+          if (serverConfig && serverConfig.items) {
+            setPricingItems(serverConfig.items)
+            setSelectedDuration(serverConfig.duration || "60 MOIS")
+            // Synchroniser avec localStorage
+            localStorage.setItem('viviworks-offre-pricing', JSON.stringify(serverConfig))
+            setIsLoading(false)
+            return
+          }
+        }
       } catch (error) {
-        console.error('Erreur lors du chargement des prix:', error)
+        console.error('Erreur API, fallback localStorage:', error)
       }
+      
+      // Fallback: charger depuis localStorage
+      const savedPricing = localStorage.getItem('viviworks-offre-pricing')
+      if (savedPricing) {
+        try {
+          const pricing = JSON.parse(savedPricing)
+          setPricingItems(pricing.items || defaultPricingItems)
+          setSelectedDuration(pricing.duration || "60 MOIS")
+        } catch (error) {
+          console.error('Erreur localStorage:', error)
+        }
+      }
+      setIsLoading(false)
     }
+    
+    loadPricingConfig()
   }, [])
 
   // Charger tous les devis
@@ -319,18 +345,37 @@ export function ModificationsContent() {
     setHasChanges(true)
   }
 
-  const handleSaveAll = () => {
+  const handleSaveAll = async () => {
     const pricingData = {
       items: pricingItems,
       duration: selectedDuration
     }
+    
+    // Sauvegarder en localStorage (pour le fallback)
     localStorage.setItem('viviworks-offre-pricing', JSON.stringify(pricingData))
+    
+    // Sauvegarder sur le serveur (Upstash)
+    try {
+      const response = await fetch('/api/pricing-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(pricingData)
+      })
+      
+      if (response.ok) {
+        toast.success("Configuration sauvegardée sur le serveur!")
+      } else {
+        toast.warning("Sauvegardé localement (erreur serveur)")
+      }
+    } catch (error) {
+      console.error('Erreur sauvegarde serveur:', error)
+      toast.warning("Sauvegardé localement (erreur serveur)")
+    }
     
     // Émettre un événement pour notifier les autres composants
     window.dispatchEvent(new Event('offre-pricing-updated'))
     
     setHasChanges(false)
-    toast.success("Configuration sauvegardée!")
   }
 
   const handleResetAll = () => {

@@ -100,23 +100,21 @@ export function OffrePartenariatContent() {
   const [isOffreActive, setIsOffreActive] = useState(false)
 
   // Fonction pour charger la configuration
-  const loadPricingConfig = () => {
-    const savedPricing = localStorage.getItem('viviworks-offre-pricing')
-    if (savedPricing) {
-      try {
-        const pricing = JSON.parse(savedPricing)
-        if (pricing.items) {
-          // Utiliser les items sauvegardés directement (avec toutes les modifications)
-          const mergedItems = pricing.items.map((savedItem: PricingItem) => {
+  const loadPricingConfig = async () => {
+    try {
+      // Essayer de charger depuis l'API (serveur)
+      const response = await fetch('/api/pricing-config', { cache: 'no-store' })
+      if (response.ok) {
+        const serverConfig = await response.json()
+        if (serverConfig && serverConfig.items) {
+          const mergedItems = serverConfig.items.map((savedItem: PricingItem) => {
             const defaultItem = defaultPricingItems.find(d => d.id === savedItem.id)
             return {
               ...savedItem,
-              // Garder la description sauvegardée, sinon utiliser celle par défaut
               description: savedItem.description || (defaultItem?.description ?? ''),
             }
           })
           
-          // Ajouter les items par défaut qui n'existent pas dans les sauvegardés
           defaultPricingItems.forEach(defaultItem => {
             if (!mergedItems.find((m: PricingItem) => m.id === defaultItem.id)) {
               mergedItems.push(defaultItem)
@@ -125,7 +123,46 @@ export function OffrePartenariatContent() {
           
           setPricingItems(mergedItems)
           
-          // Initialiser les items offerts par défaut
+          const defaultOffered = new Set<string>()
+          mergedItems.forEach((item: PricingItem) => {
+            if (item.isOffered) {
+              defaultOffered.add(item.id)
+            }
+          })
+          setOfferedItems(defaultOffered)
+          
+          if (serverConfig.duration) {
+            setSelectedDuration(serverConfig.duration)
+          }
+          return
+        }
+      }
+    } catch (error) {
+      console.error('Erreur API, fallback localStorage:', error)
+    }
+    
+    // Fallback: charger depuis localStorage
+    const savedPricing = localStorage.getItem('viviworks-offre-pricing')
+    if (savedPricing) {
+      try {
+        const pricing = JSON.parse(savedPricing)
+        if (pricing.items) {
+          const mergedItems = pricing.items.map((savedItem: PricingItem) => {
+            const defaultItem = defaultPricingItems.find(d => d.id === savedItem.id)
+            return {
+              ...savedItem,
+              description: savedItem.description || (defaultItem?.description ?? ''),
+            }
+          })
+          
+          defaultPricingItems.forEach(defaultItem => {
+            if (!mergedItems.find((m: PricingItem) => m.id === defaultItem.id)) {
+              mergedItems.push(defaultItem)
+            }
+          })
+          
+          setPricingItems(mergedItems)
+          
           const defaultOffered = new Set<string>()
           mergedItems.forEach((item: PricingItem) => {
             if (item.isOffered) {
@@ -138,7 +175,7 @@ export function OffrePartenariatContent() {
           setSelectedDuration(pricing.duration)
         }
       } catch (error) {
-        console.error('Erreur lors du chargement de la configuration:', error)
+        console.error('Erreur localStorage:', error)
       }
     }
   }
@@ -159,12 +196,28 @@ export function OffrePartenariatContent() {
       loadPricingConfig()
     }
     
+    // Recharger quand la page devient visible (retour sur l'onglet)
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible') {
+        loadPricingConfig()
+      }
+    }
+    
+    // Recharger quand la fenêtre reprend le focus
+    const handleFocus = () => {
+      loadPricingConfig()
+    }
+    
     window.addEventListener('storage', handleStorageChange)
     window.addEventListener('offre-pricing-updated', handlePricingUpdate)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
+    window.addEventListener('focus', handleFocus)
     
     return () => {
       window.removeEventListener('storage', handleStorageChange)
       window.removeEventListener('offre-pricing-updated', handlePricingUpdate)
+      document.removeEventListener('visibilitychange', handleVisibilityChange)
+      window.removeEventListener('focus', handleFocus)
     }
   }, [])
 
@@ -194,6 +247,36 @@ export function OffrePartenariatContent() {
       // Activer le mode (sans offrir automatiquement tous les items)
       setIsOffreActive(true)
     }
+  }
+
+  // Confirmer et envoyer vers la page devis
+  const handleConfirmer = () => {
+    // Préparer les lignes du devis avec les prix (offerts ou non)
+    const devisLines = pricingItems.map(item => {
+      const isOffered = offeredItems.has(item.id)
+      const finalPrice = isOffered ? (item.offerPrice ?? 0) : item.price
+      return {
+        id: item.id,
+        description: `${item.category} - ${item.description}`,
+        quantity: 1,
+        unitPrice: finalPrice,
+        total: finalPrice
+      }
+    })
+    
+    // Sauvegarder dans localStorage pour la page devis
+    const devisData = {
+      lines: devisLines,
+      fromOffre: true,
+      date: new Date().toISOString()
+    }
+    localStorage.setItem('viviworks-devis-from-offre', JSON.stringify(devisData))
+    
+    // Émettre un événement
+    window.dispatchEvent(new Event('devis-data-updated'))
+    
+    // Rediriger vers la page devis
+    window.location.href = '/devis'
   }
 
   // Calculer les économies
@@ -235,6 +318,12 @@ export function OffrePartenariatContent() {
             >
               {isOffreActive ? 'Annuler' : 'Offre partenariat'}
             </button>
+            <button
+              onClick={handleConfirmer}
+              className="px-3 py-2 rounded-lg text-xs sm:text-sm font-bold bg-[#f5a623] text-white hover:bg-[#e09515] transition-all duration-300"
+            >
+              Confirmer
+            </button>
           </div>
           
           <div className="hidden sm:flex items-center gap-12 text-sm font-semibold text-gray-600">
@@ -268,26 +357,21 @@ export function OffrePartenariatContent() {
                   <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4 flex-shrink-0 bg-gray-50 sm:bg-transparent p-2 sm:p-0 rounded-lg">
                     {/* Budget HT - Cliquable seulement si mode offre actif et peut être offert */}
                     <div 
-                      className={`text-left sm:text-right min-w-[80px] sm:min-w-[120px] ${isOffreActive && item.canBeOffered ? 'cursor-pointer hover:opacity-80' : ''}`}
+                      className={`flex items-center gap-2 min-w-[120px] sm:min-w-[180px] ${isOffreActive && item.canBeOffered ? 'cursor-pointer hover:opacity-80' : ''}`}
                       onClick={() => toggleOffer(item.id)}
                     >
-                      <div className="flex flex-col items-start sm:items-end">
-                        {/* Prix original */}
-                        <span className={`text-sm font-medium transition-all duration-300 ${
-                          isOffered ? 'line-through text-gray-400' : 'text-gray-800'
-                        }`}>
-                          {item.price}€
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Prix offre - Apparaît seulement quand offert */}
-                    <div className="min-w-[50px] sm:min-w-[80px] flex justify-center">
+                      {/* Prix original */}
+                      <span className={`text-sm font-medium transition-all duration-300 ${
+                        isOffered ? 'line-through text-gray-400' : 'text-gray-800'
+                      }`}>
+                        {item.price}€
+                      </span>
+                      
+                      {/* Prix offre - Apparaît à côté quand offert */}
                       {isOffered && (
                         <span 
-                          className="inline-block px-3 py-1 rounded-full text-white font-bold text-xs sm:text-sm cursor-pointer"
+                          className="inline-block px-3 py-1 rounded-full text-white font-bold text-xs sm:text-sm"
                           style={{ backgroundColor: "#FF0671" }}
-                          onClick={() => toggleOffer(item.id)}
                         >
                           {item.offerPrice ?? 0}€
                         </span>

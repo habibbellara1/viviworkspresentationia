@@ -55,15 +55,16 @@ export function DevisContent() {
     notes: "Devis valable 30 jours. Paiement à 30 jours net."
   })
 
-  // Charger les informations client depuis localStorage
+  // Charger les informations client et les lignes depuis localStorage
   useEffect(() => {
+    // Charger les infos client depuis entreprise-info
     const savedInfo = localStorage.getItem('entreprise-info')
     if (savedInfo) {
       try {
         const info = JSON.parse(savedInfo)
         setDevisInfo(prev => ({
           ...prev,
-          clientNom: info.nom || "",
+          clientNom: info.enseigne || info.raisonSociale || info.nom || "",
           clientAdresse: info.adresse || "",
           clientCodePostal: info.codePostal || "",
           clientVille: info.ville || "",
@@ -71,7 +72,32 @@ export function DevisContent() {
           clientEmail: info.email || "",
         }))
       } catch (error) {
-        console.error('Erreur:', error)
+        console.error('Erreur chargement infos client:', error)
+      }
+    }
+    
+    // Charger les lignes depuis offre partenariat
+    const savedDevisData = localStorage.getItem('viviworks-devis-from-offre')
+    if (savedDevisData) {
+      try {
+        const devisData = JSON.parse(savedDevisData)
+        if (devisData.lines && devisData.lines.length > 0) {
+          // Convertir les lignes de l'offre en lignes de devis
+          const convertedLines: DevisLine[] = devisData.lines.map((line: { id: string; description: string; quantity: number; unitPrice: number; total: number }, index: number) => ({
+            id: line.id || (index + 1).toString(),
+            description: line.description || "",
+            quantity: line.quantity || 1,
+            unitPrice: line.unitPrice || 0,
+            total: line.total || (line.quantity * line.unitPrice) || 0
+          }))
+          
+          setDevisInfo(prev => ({
+            ...prev,
+            lines: convertedLines
+          }))
+        }
+      } catch (error) {
+        console.error('Erreur chargement lignes devis:', error)
       }
     }
   }, [])

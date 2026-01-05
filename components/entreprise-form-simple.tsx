@@ -327,14 +327,26 @@ export function EntrepriseFormSimple() {
               
               <Button
                 onClick={() => {
+                  // Sauvegarder toutes les infos client dans localStorage
                   localStorage.setItem('entreprise-info', JSON.stringify({
+                    enseigne: formData.enseigne,
+                    raisonSociale: formData.raisonSociale,
+                    formeSociete: formData.formeSociete,
+                    codeAPE: formData.codeAPE,
+                    siret: formData.siret,
                     adresse: formData.adresse,
                     codePostal: formData.codePostal,
                     ville: formData.ville,
+                    prenom: formData.prenom,
+                    nom: formData.nom,
+                    dateNaissance: formData.dateNaissance,
+                    email: formData.email,
                     telephone: formData.telephone,
-                    email: formData.email
+                    dateCreation: formData.dateCreation
                   }))
                   toast.success("Informations confirmées !")
+                  // Rediriger vers la page devis
+                  window.location.href = '/devis'
                 }}
                 className="bg-[#f5a623] hover:bg-[#e09520] text-white px-6 py-2 text-sm font-semibold"
               >
