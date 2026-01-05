@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react"
 import { ChevronLeft, ChevronRight } from "lucide-react"
+import { toast } from "sonner"
 
 interface PricingItem {
   id: string
@@ -251,32 +252,42 @@ export function OffrePartenariatContent() {
 
   // Confirmer et envoyer vers la page devis
   const handleConfirmer = () => {
-    // Préparer les lignes du devis avec les prix (offerts ou non)
-    const devisLines = pricingItems.map(item => {
-      const isOffered = offeredItems.has(item.id)
-      const finalPrice = isOffered ? (item.offerPrice ?? 0) : item.price
-      return {
-        id: item.id,
-        description: `${item.category} - ${item.description}`,
-        quantity: 1,
-        unitPrice: finalPrice,
-        total: finalPrice
+    try {
+      // Préparer les lignes du devis avec les prix (offerts ou non)
+      const devisLines = pricingItems.map(item => {
+        const isOffered = offeredItems.has(item.id)
+        const finalPrice = isOffered ? (item.offerPrice ?? 0) : item.price
+        return {
+          id: item.id,
+          description: `${item.category} - ${item.description}`,
+          quantity: 1,
+          unitPrice: finalPrice,
+          total: finalPrice
+        }
+      })
+      
+      // Sauvegarder dans localStorage pour la page devis
+      const devisData = {
+        lines: devisLines,
+        fromOffre: true,
+        date: new Date().toISOString()
       }
-    })
-    
-    // Sauvegarder dans localStorage pour la page devis
-    const devisData = {
-      lines: devisLines,
-      fromOffre: true,
-      date: new Date().toISOString()
+      localStorage.setItem('viviworks-devis-from-offre', JSON.stringify(devisData))
+      
+      // Émettre un événement
+      window.dispatchEvent(new Event('devis-data-updated'))
+      
+      // Message de succès
+      toast.success("Données envoyées vers le devis !")
+      
+      // Rediriger vers la page devis après un court délai
+      setTimeout(() => {
+        window.location.href = '/devis'
+      }, 500)
+    } catch (error) {
+      console.error('Erreur:', error)
+      toast.error("Erreur lors de l'envoi des données")
     }
-    localStorage.setItem('viviworks-devis-from-offre', JSON.stringify(devisData))
-    
-    // Émettre un événement
-    window.dispatchEvent(new Event('devis-data-updated'))
-    
-    // Rediriger vers la page devis
-    window.location.href = '/devis'
   }
 
   // Calculer les économies
