@@ -25,7 +25,8 @@ const defaultPricingItems: PricingItem[] = [
     price: 2350,
     periodicity: "Versement unique",
     canBeOffered: true,
-    isOffered: false
+    isOffered: false,
+    offerPrice: 0
   },
   {
     id: "nom-domaine",
@@ -34,28 +35,13 @@ const defaultPricingItems: PricingItem[] = [
     price: 30,
     periodicity: "Annuel",
     canBeOffered: true,
-    isOffered: false
+    isOffered: false,
+    offerPrice: 0
   },
   {
     id: "hebergement",
     category: "Hébergement, administration et référencement",
-    description: `• Optimisation des sites pour les moteurs de recherche (Google, Yahoo, Bing...) : contenus structurés et optimisés, maillage interne.
-• Hébergement
-• Certificat SSL permettant une navigation sécurisée (https)
-• Mises à jour de contenu illimitées
-• Mise à disposition du gestionnaire de contenu Webtool
-• Evolutions fonctionnelles de la plateforme Webtool
-• Accompagnement personnalisé par un expert local.fr
-• Accompagnement par un expert en référencement local.fr
-• Assistance du lundi au vendredi par téléphone et e-mail
-• Accès aux statistiques de visite
-• Campagne Google Ads
-• Accès à l'espace partenaire local&moi
-• Accompagnement dans la Création de votre page FB et GMB
-• Diffusion des coordonnées sur les annuaires et GPS majeurs (Facebook, Google My Business, Google Maps et Waze)
-• Estimation du marché
-• Optimisations par du référencement naturel et du référencement payant
-• Garantie de visites incluse pendant 12 mois (100 visites/mois moyenne annuelle mensualisée sur 12 mois)`,
+    description: "Optimisation SEO, hébergement, SSL, mises à jour illimitées, Webtool, accompagnement expert, Google Ads, etc.",
     price: 134,
     periodicity: "Mensuel",
     canBeOffered: false,
@@ -65,25 +51,27 @@ const defaultPricingItems: PricingItem[] = [
   {
     id: "communication",
     category: "Communication Web",
-    description: "• Annuaire local.fr",
+    description: "Annuaire local.fr",
     price: 432,
     periodicity: "Versement unique",
     canBeOffered: true,
-    isOffered: false
+    isOffered: false,
+    offerPrice: 0
   },
   {
     id: "formation",
     category: "Formation",
-    description: "• Prendre en main l'outil de mise à jour Webtool",
+    description: "Prendre en main l'outil de mise à jour Webtool",
     price: 95,
     periodicity: "Versement unique",
     canBeOffered: true,
-    isOffered: false
+    isOffered: false,
+    offerPrice: 0
   },
   {
     id: "frais-mise-en-oeuvre",
     category: "Frais de mise en oeuvre",
-    description: "• Site jusqu'à 10 pages",
+    description: "Site jusqu'à 10 pages",
     price: 449,
     periodicity: "Versement unique",
     canBeOffered: false,
@@ -107,25 +95,12 @@ export function OffrePartenariatContent() {
       const response = await fetch('/api/pricing-config', { cache: 'no-store' })
       if (response.ok) {
         const serverConfig = await response.json()
-        if (serverConfig && serverConfig.items) {
-          const mergedItems = serverConfig.items.map((savedItem: PricingItem) => {
-            const defaultItem = defaultPricingItems.find(d => d.id === savedItem.id)
-            return {
-              ...savedItem,
-              description: savedItem.description || (defaultItem?.description ?? ''),
-            }
-          })
-          
-          defaultPricingItems.forEach(defaultItem => {
-            if (!mergedItems.find((m: PricingItem) => m.id === defaultItem.id)) {
-              mergedItems.push(defaultItem)
-            }
-          })
-          
-          setPricingItems(mergedItems)
+        if (serverConfig && serverConfig.items && serverConfig.items.length > 0) {
+          // Utiliser directement les items du serveur
+          setPricingItems(serverConfig.items)
           
           const defaultOffered = new Set<string>()
-          mergedItems.forEach((item: PricingItem) => {
+          serverConfig.items.forEach((item: PricingItem) => {
             if (item.isOffered) {
               defaultOffered.add(item.id)
             }
@@ -147,25 +122,12 @@ export function OffrePartenariatContent() {
     if (savedPricing) {
       try {
         const pricing = JSON.parse(savedPricing)
-        if (pricing.items) {
-          const mergedItems = pricing.items.map((savedItem: PricingItem) => {
-            const defaultItem = defaultPricingItems.find(d => d.id === savedItem.id)
-            return {
-              ...savedItem,
-              description: savedItem.description || (defaultItem?.description ?? ''),
-            }
-          })
-          
-          defaultPricingItems.forEach(defaultItem => {
-            if (!mergedItems.find((m: PricingItem) => m.id === defaultItem.id)) {
-              mergedItems.push(defaultItem)
-            }
-          })
-          
-          setPricingItems(mergedItems)
+        if (pricing.items && pricing.items.length > 0) {
+          // Utiliser directement les items du localStorage
+          setPricingItems(pricing.items)
           
           const defaultOffered = new Set<string>()
-          mergedItems.forEach((item: PricingItem) => {
+          pricing.items.forEach((item: PricingItem) => {
             if (item.isOffered) {
               defaultOffered.add(item.id)
             }
