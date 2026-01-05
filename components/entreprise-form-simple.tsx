@@ -344,9 +344,7 @@ export function EntrepriseFormSimple() {
                     telephone: formData.telephone,
                     dateCreation: formData.dateCreation
                   }))
-                  toast.success("Informations confirmées !")
-                  // Rediriger vers la page devis
-                  window.location.href = '/devis'
+                  toast.success("Informations envoyées vers le devis !")
                 }}
                 className="bg-[#f5a623] hover:bg-[#e09520] text-white px-6 py-2 text-sm font-semibold"
               >

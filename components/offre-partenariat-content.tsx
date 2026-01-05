@@ -279,11 +279,6 @@ export function OffrePartenariatContent() {
       
       // Message de succès
       toast.success("Données envoyées vers le devis !")
-      
-      // Rediriger vers la page devis après un court délai
-      setTimeout(() => {
-        window.location.href = '/devis'
-      }, 500)
     } catch (error) {
       console.error('Erreur:', error)
       toast.error("Erreur lors de l'envoi des données")
