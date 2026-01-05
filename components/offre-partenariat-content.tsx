@@ -221,10 +221,11 @@ export function OffrePartenariatContent() {
         const finalPrice = isOffered ? (item.offerPrice ?? 0) : item.price
         return {
           id: item.id,
-          description: `${item.category} - ${item.description}`,
+          description: item.category,
           quantity: 1,
           unitPrice: finalPrice,
-          total: finalPrice
+          total: finalPrice,
+          periodicity: item.periodicity
         }
       })
       
