@@ -322,14 +322,14 @@ export function OffrePartenariatContent() {
                   </div>
 
                   {/* Prix et périodicité - Mobile: horizontal compact */}
-                  <div className="flex items-center justify-between sm:justify-start gap-3 sm:gap-4 flex-shrink-0 bg-gray-50 sm:bg-transparent p-2 sm:p-0 rounded-lg">
+                  <div className="flex items-center justify-end gap-4 flex-shrink-0 bg-gray-50 sm:bg-transparent p-2 sm:p-0 rounded-lg sm:min-w-[280px]">
                     {/* Budget HT - Cliquable seulement si mode offre actif et peut être offert */}
                     <div 
-                      className={`flex items-center gap-2 min-w-[120px] sm:min-w-[180px] ${isOffreActive && item.canBeOffered ? 'cursor-pointer hover:opacity-80' : ''}`}
+                      className={`flex items-center justify-end gap-2 w-[140px] ${isOffreActive && item.canBeOffered ? 'cursor-pointer hover:opacity-80' : ''}`}
                       onClick={() => toggleOffer(item.id)}
                     >
                       {/* Prix original */}
-                      <span className={`text-sm font-medium transition-all duration-300 ${
+                      <span className={`text-sm font-medium transition-all duration-300 text-right ${
                         isOffered ? 'line-through text-gray-400' : 'text-gray-800'
                       }`}>
                         {item.price}€
@@ -347,7 +347,7 @@ export function OffrePartenariatContent() {
                     </div>
 
                     {/* Périodicité */}
-                    <div className="text-right min-w-[70px] sm:min-w-[100px]">
+                    <div className="text-right w-[120px]">
                       <span className="text-gray-600 text-xs sm:text-sm">
                         {item.periodicity}
                       </span>
