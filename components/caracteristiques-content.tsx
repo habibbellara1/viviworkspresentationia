@@ -37,18 +37,35 @@ export function CaracteristiquesContent() {
   const [selectedOptions, setSelectedOptions] = useState<string[]>([])
   const [visitesParMois] = useState(100)
 
-  // Fonction pour charger la configuration
-  const loadConfig = () => {
-    const savedConfig = localStorage.getItem('viviworks-caracteristiques-config')
-    if (savedConfig) {
-      try {
-        const config = JSON.parse(savedConfig)
-        setOptionsDisponibles(config.options || defaultOptionsDisponibles)
-        setOffrePersonnalisee(config.features || defaultOffrePersonnalisee)
-      } catch (error) {
-        console.error('Erreur:', error)
+  // Fonction pour charger la configuration depuis l'API puis localStorage
+  const loadConfig = async () => {
+    try {
+      // Essayer de charger depuis l'API (serveur)
+      const response = await fetch('/api/caracteristiques-config', { cache: 'no-store' })
+      if (response.ok) {
+        const serverConfig = await response.json()
+        if (serverConfig) {
+          setOptionsDisponibles(serverConfig.options || defaultOptionsDisponibles)
+          setOffrePersonnalisee(serverConfig.features || defaultOffrePersonnalisee)
+          // Synchroniser avec localStorage
+          localStorage.setItem('viviworks-caracteristiques-config', JSON.stringify(serverConfig))
+        }
+      }
+    } catch (error) {
+      console.error('Erreur API, fallback localStorage:', error)
+      // Fallback: charger depuis localStorage
+      const savedConfig = localStorage.getItem('viviworks-caracteristiques-config')
+      if (savedConfig) {
+        try {
+          const config = JSON.parse(savedConfig)
+          setOptionsDisponibles(config.options || defaultOptionsDisponibles)
+          setOffrePersonnalisee(config.features || defaultOffrePersonnalisee)
+        } catch (err) {
+          console.error('Erreur:', err)
+        }
       }
     }
+    
     const saved = localStorage.getItem('caracteristiques-options')
     if (saved) setSelectedOptions(JSON.parse(saved))
   }

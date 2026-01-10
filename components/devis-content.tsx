@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -14,7 +14,11 @@ import {
   Building2,
   User,
   Calendar,
-  Euro
+  Euro,
+  PenTool,
+  Send,
+  RotateCcw,
+  Check
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -38,9 +42,17 @@ interface DevisInfo {
   clientEmail: string
   lines: DevisLine[]
   notes: string
+  signature?: string
+  signedAt?: string
 }
 
 export function DevisContent() {
+  const canvasRef = useRef<HTMLCanvasElement>(null)
+  const [isDrawing, setIsDrawing] = useState(false)
+  const [signature, setSignature] = useState<string | null>(null)
+  const [isSigned, setIsSigned] = useState(false)
+  const [isSending, setIsSending] = useState(false)
+  
   const [devisInfo, setDevisInfo] = useState<DevisInfo>({
     numero: `DV-${Date.now().toString().slice(-6)}`,
     date: new Date().toISOString().split('T')[0],
@@ -201,6 +213,155 @@ Notes: ${devisInfo.notes}
     document.body.removeChild(link)
     URL.revokeObjectURL(url)
     toast.success("Devis téléchargé!")
+  }
+
+  // Fonctions pour la signature électronique
+  const initCanvas = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+    
+    ctx.fillStyle = '#ffffff'
+    ctx.fillRect(0, 0, canvas.width, canvas.height)
+    ctx.strokeStyle = '#000000'
+    ctx.lineWidth = 2
+    ctx.lineCap = 'round'
+    ctx.lineJoin = 'round'
+  }
+
+  useEffect(() => {
+    initCanvas()
+  }, [])
+
+  const startDrawing = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    setIsDrawing(true)
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const rect = canvas.getBoundingClientRect()
+    let x, y
+    
+    if ('touches' in e) {
+      x = e.touches[0].clientX - rect.left
+      y = e.touches[0].clientY - rect.top
+    } else {
+      x = e.clientX - rect.left
+      y = e.clientY - rect.top
+    }
+    
+    ctx.beginPath()
+    ctx.moveTo(x, y)
+  }
+
+  const draw = (e: React.MouseEvent<HTMLCanvasElement> | React.TouchEvent<HTMLCanvasElement>) => {
+    if (!isDrawing) return
+    const canvas = canvasRef.current
+    if (!canvas) return
+    const ctx = canvas.getContext('2d')
+    if (!ctx) return
+
+    const rect = canvas.getBoundingClientRect()
+    let x, y
+    
+    if ('touches' in e) {
+      e.preventDefault()
+      x = e.touches[0].clientX - rect.left
+      y = e.touches[0].clientY - rect.top
+    } else {
+      x = e.clientX - rect.left
+      y = e.clientY - rect.top
+    }
+    
+    ctx.lineTo(x, y)
+    ctx.stroke()
+  }
+
+  const stopDrawing = () => {
+    setIsDrawing(false)
+  }
+
+  const clearSignature = () => {
+    initCanvas()
+    setSignature(null)
+    setIsSigned(false)
+  }
+
+  const confirmSignature = () => {
+    const canvas = canvasRef.current
+    if (!canvas) return
+    
+    const signatureData = canvas.toDataURL('image/png')
+    setSignature(signatureData)
+    setIsSigned(true)
+    setDevisInfo(prev => ({
+      ...prev,
+      signature: signatureData,
+      signedAt: new Date().toISOString()
+    }))
+    toast.success("Signature enregistrée!")
+  }
+
+  const sendSignedDevis = async () => {
+    if (isSending) return // Empêcher les doubles clics
+    
+    if (!signature) {
+      toast.error("Veuillez signer la facture avant de l'envoyer")
+      return
+    }
+    
+    if (!devisInfo.clientEmail) {
+      toast.error("Veuillez renseigner l'email du client")
+      return
+    }
+
+    setIsSending(true)
+    
+    try {
+      const total = calculateTotal()
+      
+      const response = await fetch('/api/send-devis', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: devisInfo.clientEmail,
+          devisData: {
+            numero: devisInfo.numero,
+            date: devisInfo.date,
+            validite: devisInfo.validite,
+            clientNom: devisInfo.clientNom,
+            clientAdresse: devisInfo.clientAdresse,
+            clientCodePostal: devisInfo.clientCodePostal,
+            clientVille: devisInfo.clientVille,
+            clientTelephone: devisInfo.clientTelephone,
+            clientEmail: devisInfo.clientEmail,
+            lines: devisInfo.lines,
+            notes: devisInfo.notes,
+            total
+          },
+          signature
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (response.ok) {
+        toast.success(`Facture et CGV envoyées à ${devisInfo.clientEmail}!`)
+        if (result.message && result.message.includes('erreur CGV')) {
+          toast.warning("La facture a été envoyée mais il y a eu un problème avec les CGV")
+        }
+        saveDevis()
+      } else {
+        toast.error(result.error || "Erreur lors de l'envoi")
+      }
+    } catch (error) {
+      console.error('Erreur:', error)
+      toast.error("Erreur lors de l'envoi de la facture")
+    } finally {
+      setIsSending(false)
+    }
   }
 
   return (
@@ -415,6 +576,102 @@ Notes: ${devisInfo.notes}
               rows={3}
               className="border-gray-300 focus:border-[#FF0671]"
             />
+          </div>
+
+          {/* Section: Signature électronique */}
+          <div className="border-b border-gray-100 pb-6">
+            <h3 className="text-base sm:text-lg font-bold italic mb-4 text-[#FF0671] flex items-center gap-2">
+              <PenTool className="w-5 h-5" />
+              Signature électronique
+            </h3>
+            
+            <div className="bg-gray-50 rounded-xl p-4 border-2 border-dashed border-gray-300">
+              {!isSigned ? (
+                <>
+                  <p className="text-sm text-gray-600 mb-3">
+                    Signez dans le cadre ci-dessous pour valider le devis
+                  </p>
+                  <div className="relative">
+                    <canvas
+                      ref={canvasRef}
+                      width={400}
+                      height={150}
+                      className="border-2 border-gray-300 rounded-lg bg-white cursor-crosshair w-full max-w-[400px] touch-none"
+                      onMouseDown={startDrawing}
+                      onMouseMove={draw}
+                      onMouseUp={stopDrawing}
+                      onMouseLeave={stopDrawing}
+                      onTouchStart={startDrawing}
+                      onTouchMove={draw}
+                      onTouchEnd={stopDrawing}
+                    />
+                  </div>
+                  <div className="flex gap-2 mt-3">
+                    <Button
+                      onClick={clearSignature}
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-300"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-1" />
+                      Effacer
+                    </Button>
+                    <Button
+                      onClick={confirmSignature}
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <Check className="w-4 h-4 mr-1" />
+                      Valider la signature
+                    </Button>
+                  </div>
+                </>
+              ) : (
+                <div className="text-center">
+                  <div className="inline-flex items-center gap-2 px-4 py-2 bg-green-100 text-green-700 rounded-full mb-3">
+                    <Check className="w-5 h-5" />
+                    <span className="font-medium">Document signé</span>
+                  </div>
+                  {signature && (
+                    <div className="mb-3">
+                      <img 
+                        src={signature} 
+                        alt="Signature" 
+                        className="max-w-[300px] mx-auto border border-gray-200 rounded-lg bg-white p-2"
+                      />
+                    </div>
+                  )}
+                  <p className="text-sm text-gray-500 mb-3">
+                    Signé le {new Date().toLocaleString('fr-FR')}
+                  </p>
+                  <div className="flex gap-2 justify-center">
+                    <Button
+                      onClick={clearSignature}
+                      variant="outline"
+                      size="sm"
+                      className="border-gray-300"
+                    >
+                      <RotateCcw className="w-4 h-4 mr-1" />
+                      Nouvelle signature
+                    </Button>
+                    <Button
+                      onClick={sendSignedDevis}
+                      disabled={isSending || !devisInfo.clientEmail}
+                      size="sm"
+                      className="bg-[#FF0671] hover:bg-[#e0055f] text-white"
+                    >
+                      <Send className="w-4 h-4 mr-1" />
+                      {isSending ? 'Envoi...' : 'Envoyer au client'}
+                    </Button>
+                  </div>
+                  {!devisInfo.clientEmail && (
+                    <p className="text-xs text-red-500 mt-2">
+                      Veuillez renseigner l'email du client pour envoyer le devis
+                    </p>
+                  )}
+                </div>
+              )}
+            </div>
           </div>
 
           {/* Total */}

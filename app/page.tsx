@@ -15,6 +15,7 @@ import { DossierPartenaireContent } from "@/components/dossier-partenaire-conten
 import { ModificationsContent } from "@/components/modifications-content"
 import { DevisContent } from "@/components/devis-content"
 import { ListeDevisContent } from "@/components/liste-devis-content"
+import { EtapesPartenariatContent } from "@/components/etapes-partenariat-content"
 import { AppSidebar } from "@/components/app-sidebar"
 import { SidebarProvider, SidebarInset, SidebarTrigger } from "@/components/ui/sidebar"
 import { LoginForm } from "@/components/login-form"
@@ -122,6 +123,8 @@ export default function Page() {
                 <ViviworksContent />
               ) : activeSection === "entreprise" ? (
                 <EntrepriseFormSimple />
+              ) : activeSection === "etapes-partenariat" ? (
+                <EtapesPartenariatContent />
               ) : activeSection === "sensibilisation" ? (
                 <SensibilisationContent />
               ) : activeSection === "regles" ? (

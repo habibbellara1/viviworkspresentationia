@@ -22,6 +22,7 @@ import {
   FileSpreadsheet,
   Sparkles,
   ChevronRight,
+  ListOrdered,
 } from "lucide-react"
 
 import {
@@ -56,6 +57,11 @@ const menuItems = [
     title: "Votre entreprise",
     icon: Building2,
     key: "entreprise",
+  },
+  {
+    title: "Étapes de partenariat",
+    icon: ListOrdered,
+    key: "etapes-partenariat",
   },
   {
     title: "Sensibilisation",

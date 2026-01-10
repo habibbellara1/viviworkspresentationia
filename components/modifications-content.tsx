@@ -236,18 +236,39 @@ export function ModificationsContent() {
     loadAllDevis()
   }, [])
 
-  // Charger les options Caractéristiques
+  // Charger les options Caractéristiques depuis l'API
   useEffect(() => {
-    const savedOptions = localStorage.getItem('viviworks-caracteristiques-config')
-    if (savedOptions) {
+    const loadCaracteristiquesConfig = async () => {
       try {
-        const config = JSON.parse(savedOptions)
-        setOptionsDisponibles(config.options || defaultOptionsDisponibles)
-        setOffrePersonnalisee(config.features || defaultOffrePersonnalisee)
+        const response = await fetch('/api/caracteristiques-config')
+        if (response.ok) {
+          const serverConfig = await response.json()
+          if (serverConfig) {
+            setOptionsDisponibles(serverConfig.options || defaultOptionsDisponibles)
+            setOffrePersonnalisee(serverConfig.features || defaultOffrePersonnalisee)
+            // Synchroniser avec localStorage
+            localStorage.setItem('viviworks-caracteristiques-config', JSON.stringify(serverConfig))
+            return
+          }
+        }
       } catch (error) {
-        console.error('Erreur lors du chargement des options:', error)
+        console.error('Erreur API caracteristiques, fallback localStorage:', error)
+      }
+      
+      // Fallback: charger depuis localStorage
+      const savedOptions = localStorage.getItem('viviworks-caracteristiques-config')
+      if (savedOptions) {
+        try {
+          const config = JSON.parse(savedOptions)
+          setOptionsDisponibles(config.options || defaultOptionsDisponibles)
+          setOffrePersonnalisee(config.features || defaultOffrePersonnalisee)
+        } catch (error) {
+          console.error('Erreur lors du chargement des options:', error)
+        }
       }
     }
+    
+    loadCaracteristiquesConfig()
   }, [])
 
   const loadAllDevis = () => {
@@ -495,17 +516,35 @@ export function ModificationsContent() {
     setHasChanges(true)
   }
 
-  const handleSaveCaracteristiques = () => {
+  const handleSaveCaracteristiques = async () => {
     const config = {
       options: optionsDisponibles,
       features: offrePersonnalisee
     }
+    
+    // Sauvegarder en localStorage (fallback)
     localStorage.setItem('viviworks-caracteristiques-config', JSON.stringify(config))
+    
+    // Sauvegarder sur le serveur (MongoDB)
+    try {
+      const response = await fetch('/api/caracteristiques-config', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(config)
+      })
+      
+      if (response.ok) {
+        toast.success("Options Caractéristiques sauvegardées sur le serveur!")
+      } else {
+        toast.warning("Sauvegardé localement (erreur serveur)")
+      }
+    } catch (error) {
+      console.error('Erreur sauvegarde serveur:', error)
+      toast.warning("Sauvegardé localement (erreur serveur)")
+    }
     
     // Émettre un événement pour notifier les autres composants
     window.dispatchEvent(new Event('caracteristiques-config-updated'))
-    
-    toast.success("Options Caractéristiques sauvegardées!")
   }
 
   const handleResetCaracteristiques = () => {

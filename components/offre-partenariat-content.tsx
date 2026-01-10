@@ -329,22 +329,40 @@ export function OffrePartenariatContent() {
                       className={`flex items-center justify-end gap-2 w-[140px] ${isOffreActive && item.canBeOffered ? 'cursor-pointer hover:opacity-80' : ''}`}
                       onClick={() => toggleOffer(item.id)}
                     >
-                      {/* Prix original */}
-                      <span className={`text-sm font-medium transition-all duration-300 text-right ${
-                        isOffered ? 'line-through text-gray-400' : 'text-gray-800'
-                      }`}>
-                        {item.price}€
-                      </span>
-                      
-                      {/* Prix offre - Apparaît à côté quand offert */}
-                      {isOffered && (
-                        <span 
-                          className="inline-block px-3 py-1 rounded-full text-white font-bold text-xs sm:text-sm"
-                          style={{ backgroundColor: "#FF0671" }}
-                        >
-                          {item.offerPrice ?? 0}€
-                        </span>
-                      )}
+                      {/* Prix original - barré seulement si le prix offre est différent */}
+                      {(() => {
+                        const offerPrice = item.offerPrice ?? 0
+                        const hasDifferentPrice = isOffered && offerPrice !== item.price
+                        return (
+                          <>
+                            <span className={`text-sm font-medium transition-all duration-300 text-right ${
+                              hasDifferentPrice ? 'line-through text-gray-400' : 'text-gray-800'
+                            }`}>
+                              {item.price}€
+                            </span>
+                            
+                            {/* Prix offre - Apparaît si offert ET prix différent */}
+                            {isOffered && hasDifferentPrice && (
+                              <span 
+                                className="inline-block px-3 py-1 rounded-full text-white font-bold text-xs sm:text-sm"
+                                style={{ backgroundColor: "#FF0671" }}
+                              >
+                                {offerPrice}€
+                              </span>
+                            )}
+                            
+                            {/* Prix offre - Apparaît si offert ET même prix (sans barrer l'ancien) */}
+                            {isOffered && !hasDifferentPrice && (
+                              <span 
+                                className="inline-block px-3 py-1 rounded-full text-white font-bold text-xs sm:text-sm"
+                                style={{ backgroundColor: "#FF0671" }}
+                              >
+                                {offerPrice}€
+                              </span>
+                            )}
+                          </>
+                        )
+                      })()}
                     </div>
 
                     {/* Périodicité */}
