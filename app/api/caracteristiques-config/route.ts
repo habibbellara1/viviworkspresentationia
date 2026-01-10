@@ -46,13 +46,28 @@ export async function GET() {
     const config = await db.collection('config').findOne({ key: CONFIG_KEY })
     
     if (config?.data) {
-      return NextResponse.json(config.data)
+      return NextResponse.json(config.data, {
+        headers: {
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+          'Pragma': 'no-cache'
+        }
+      })
     }
     
-    return NextResponse.json(DEFAULT_CONFIG)
+    return NextResponse.json(DEFAULT_CONFIG, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    })
   } catch (error) {
     console.error('Erreur GET caracteristiques config:', error)
-    return NextResponse.json(DEFAULT_CONFIG)
+    return NextResponse.json(DEFAULT_CONFIG, {
+      headers: {
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+        'Pragma': 'no-cache'
+      }
+    })
   }
 }
 

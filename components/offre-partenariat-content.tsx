@@ -91,8 +91,11 @@ export function OffrePartenariatContent() {
   // Fonction pour charger la configuration
   const loadPricingConfig = async () => {
     try {
-      // Essayer de charger depuis l'API (serveur)
-      const response = await fetch('/api/pricing-config', { cache: 'no-store' })
+      // Charger depuis l'API (serveur) - forcer no-cache
+      const response = await fetch('/api/pricing-config', { 
+        cache: 'no-store',
+        headers: { 'Cache-Control': 'no-cache' }
+      })
       if (response.ok) {
         const serverConfig = await response.json()
         if (serverConfig && serverConfig.items && serverConfig.items.length > 0) {
@@ -114,45 +117,16 @@ export function OffrePartenariatContent() {
         }
       }
     } catch (error) {
-      console.error('Erreur API, fallback localStorage:', error)
+      console.error('Erreur API:', error)
     }
     
-    // Fallback: charger depuis localStorage
-    const savedPricing = localStorage.getItem('viviworks-offre-pricing')
-    if (savedPricing) {
-      try {
-        const pricing = JSON.parse(savedPricing)
-        if (pricing.items && pricing.items.length > 0) {
-          // Utiliser directement les items du localStorage
-          setPricingItems(pricing.items)
-          
-          const defaultOffered = new Set<string>()
-          pricing.items.forEach((item: PricingItem) => {
-            if (item.isOffered) {
-              defaultOffered.add(item.id)
-            }
-          })
-          setOfferedItems(defaultOffered)
-        }
-        if (pricing.duration) {
-          setSelectedDuration(pricing.duration)
-        }
-      } catch (error) {
-        console.error('Erreur localStorage:', error)
-      }
-    }
+    // Fallback: utiliser les valeurs par défaut
+    setPricingItems(defaultPricingItems)
   }
 
   // Charger la configuration depuis localStorage
   useEffect(() => {
     loadPricingConfig()
-    
-    // Écouter les changements de localStorage
-    const handleStorageChange = (e: StorageEvent) => {
-      if (e.key === 'viviworks-offre-pricing') {
-        loadPricingConfig()
-      }
-    }
     
     // Écouter un événement personnalisé pour les changements dans le même onglet
     const handlePricingUpdate = () => {
@@ -171,13 +145,11 @@ export function OffrePartenariatContent() {
       loadPricingConfig()
     }
     
-    window.addEventListener('storage', handleStorageChange)
     window.addEventListener('offre-pricing-updated', handlePricingUpdate)
     document.addEventListener('visibilitychange', handleVisibilityChange)
     window.addEventListener('focus', handleFocus)
     
     return () => {
-      window.removeEventListener('storage', handleStorageChange)
       window.removeEventListener('offre-pricing-updated', handlePricingUpdate)
       document.removeEventListener('visibilitychange', handleVisibilityChange)
       window.removeEventListener('focus', handleFocus)

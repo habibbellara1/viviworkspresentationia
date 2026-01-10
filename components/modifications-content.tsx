@@ -197,34 +197,26 @@ export function ModificationsContent() {
     const loadPricingConfig = async () => {
       setIsLoading(true)
       try {
-        // Essayer de charger depuis l'API (serveur)
-        const response = await fetch('/api/pricing-config')
+        // Essayer de charger depuis l'API (serveur) - forcer no-cache
+        const response = await fetch('/api/pricing-config', { 
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        })
         if (response.ok) {
           const serverConfig = await response.json()
           if (serverConfig && serverConfig.items) {
             setPricingItems(serverConfig.items)
             setSelectedDuration(serverConfig.duration || "60 MOIS")
-            // Synchroniser avec localStorage
-            localStorage.setItem('viviworks-offre-pricing', JSON.stringify(serverConfig))
             setIsLoading(false)
             return
           }
         }
       } catch (error) {
-        console.error('Erreur API, fallback localStorage:', error)
+        console.error('Erreur API:', error)
       }
       
-      // Fallback: charger depuis localStorage
-      const savedPricing = localStorage.getItem('viviworks-offre-pricing')
-      if (savedPricing) {
-        try {
-          const pricing = JSON.parse(savedPricing)
-          setPricingItems(pricing.items || defaultPricingItems)
-          setSelectedDuration(pricing.duration || "60 MOIS")
-        } catch (error) {
-          console.error('Erreur localStorage:', error)
-        }
-      }
+      // Fallback: utiliser les valeurs par défaut
+      setPricingItems(defaultPricingItems)
       setIsLoading(false)
     }
     
@@ -240,32 +232,25 @@ export function ModificationsContent() {
   useEffect(() => {
     const loadCaracteristiquesConfig = async () => {
       try {
-        const response = await fetch('/api/caracteristiques-config')
+        const response = await fetch('/api/caracteristiques-config', {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        })
         if (response.ok) {
           const serverConfig = await response.json()
           if (serverConfig) {
             setOptionsDisponibles(serverConfig.options || defaultOptionsDisponibles)
             setOffrePersonnalisee(serverConfig.features || defaultOffrePersonnalisee)
-            // Synchroniser avec localStorage
-            localStorage.setItem('viviworks-caracteristiques-config', JSON.stringify(serverConfig))
             return
           }
         }
       } catch (error) {
-        console.error('Erreur API caracteristiques, fallback localStorage:', error)
+        console.error('Erreur API caracteristiques:', error)
       }
       
-      // Fallback: charger depuis localStorage
-      const savedOptions = localStorage.getItem('viviworks-caracteristiques-config')
-      if (savedOptions) {
-        try {
-          const config = JSON.parse(savedOptions)
-          setOptionsDisponibles(config.options || defaultOptionsDisponibles)
-          setOffrePersonnalisee(config.features || defaultOffrePersonnalisee)
-        } catch (error) {
-          console.error('Erreur lors du chargement des options:', error)
-        }
-      }
+      // Fallback: utiliser les valeurs par défaut
+      setOptionsDisponibles(defaultOptionsDisponibles)
+      setOffrePersonnalisee(defaultOffrePersonnalisee)
     }
     
     loadCaracteristiquesConfig()
@@ -372,10 +357,7 @@ export function ModificationsContent() {
       duration: selectedDuration
     }
     
-    // Sauvegarder en localStorage (pour le fallback)
-    localStorage.setItem('viviworks-offre-pricing', JSON.stringify(pricingData))
-    
-    // Sauvegarder sur le serveur (Upstash)
+    // Sauvegarder sur le serveur (MongoDB)
     try {
       const response = await fetch('/api/pricing-config', {
         method: 'POST',
@@ -385,18 +367,17 @@ export function ModificationsContent() {
       
       if (response.ok) {
         toast.success("Configuration sauvegardée sur le serveur!")
+        setHasChanges(false)
       } else {
-        toast.warning("Sauvegardé localement (erreur serveur)")
+        toast.error("Erreur lors de la sauvegarde")
       }
     } catch (error) {
       console.error('Erreur sauvegarde serveur:', error)
-      toast.warning("Sauvegardé localement (erreur serveur)")
+      toast.error("Erreur de connexion au serveur")
     }
     
     // Émettre un événement pour notifier les autres composants
     window.dispatchEvent(new Event('offre-pricing-updated'))
-    
-    setHasChanges(false)
   }
 
   const handleResetAll = () => {
@@ -522,9 +503,6 @@ export function ModificationsContent() {
       features: offrePersonnalisee
     }
     
-    // Sauvegarder en localStorage (fallback)
-    localStorage.setItem('viviworks-caracteristiques-config', JSON.stringify(config))
-    
     // Sauvegarder sur le serveur (MongoDB)
     try {
       const response = await fetch('/api/caracteristiques-config', {
@@ -536,11 +514,11 @@ export function ModificationsContent() {
       if (response.ok) {
         toast.success("Options Caractéristiques sauvegardées sur le serveur!")
       } else {
-        toast.warning("Sauvegardé localement (erreur serveur)")
+        toast.error("Erreur lors de la sauvegarde")
       }
     } catch (error) {
       console.error('Erreur sauvegarde serveur:', error)
-      toast.warning("Sauvegardé localement (erreur serveur)")
+      toast.error("Erreur de connexion au serveur")
     }
     
     // Émettre un événement pour notifier les autres composants
