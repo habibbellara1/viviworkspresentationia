@@ -1,43 +1,45 @@
 import { MongoClient, Db, Collection } from 'mongodb'
 
-// Vérifier que la variable d'environnement est présente
-if (!process.env.MONGODB_URI) {
-  throw new Error(
-    '❌ MONGODB_URI manquant dans .env.local\n\n' +
-    '📝 Créez le fichier .env.local à la racine avec :\n' +
-    'MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/viviworks\n\n' +
-    '📖 Voir GUIDE-MONGODB-ILLIMITE.md pour les instructions complètes'
-  )
+const uri = process.env.MONGODB_URI || ''
+const options = {
+  maxPoolSize: 1,
+  serverSelectionTimeoutMS: 5000,
+  socketTimeoutMS: 10000,
 }
 
-const uri = process.env.MONGODB_URI
-const options = {}
-
-let client: MongoClient
-let clientPromise: Promise<MongoClient>
+let client: MongoClient | null = null
+let clientPromise: Promise<MongoClient> | null = null
 
 declare global {
   // eslint-disable-next-line no-var
   var _mongoClientPromise: Promise<MongoClient> | undefined
 }
 
-if (process.env.NODE_ENV === 'development') {
-  // En développement, utiliser une variable globale pour préserver la connexion
-  // entre les rechargements de module (hot reload)
-  if (!global._mongoClientPromise) {
-    client = new MongoClient(uri, options)
-    global._mongoClientPromise = client.connect()
+function getClientPromise(): Promise<MongoClient> {
+  if (!uri) {
+    throw new Error('MONGODB_URI non configuré')
   }
-  clientPromise = global._mongoClientPromise
-} else {
-  // En production, créer une nouvelle connexion
-  client = new MongoClient(uri, options)
-  clientPromise = client.connect()
+  
+  if (process.env.NODE_ENV === 'development') {
+    // En développement, utiliser une variable globale pour préserver la connexion
+    if (!global._mongoClientPromise) {
+      client = new MongoClient(uri, options)
+      global._mongoClientPromise = client.connect()
+    }
+    return global._mongoClientPromise
+  } else {
+    // En production, créer une nouvelle connexion à chaque appel
+    if (!clientPromise) {
+      client = new MongoClient(uri, options)
+      clientPromise = client.connect()
+    }
+    return clientPromise
+  }
 }
 
 // Fonction helper pour obtenir la base de données
 export async function getDatabase(): Promise<Db> {
-  const client = await clientPromise
+  const client = await getClientPromise()
   return client.db('viviworks')
 }
 
@@ -82,5 +84,5 @@ export interface DevisData {
   totalHT?: number
 }
 
-export default clientPromise
+export default getClientPromise
 

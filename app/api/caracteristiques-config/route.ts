@@ -29,21 +29,32 @@ const DEFAULT_CONFIG = {
   ]
 }
 
-let client: MongoClient | null = null
-
 async function getDb() {
-  if (!MONGODB_URI) throw new Error('MONGODB_URI non configuré')
-  if (!client) {
-    client = new MongoClient(MONGODB_URI)
-    await client.connect()
+  if (!MONGODB_URI) {
+    console.error('MONGODB_URI non configuré')
+    throw new Error('MONGODB_URI non configuré')
   }
-  return client.db('viviworks')
+  
+  const client = new MongoClient(MONGODB_URI, {
+    maxPoolSize: 1,
+    serverSelectionTimeoutMS: 5000,
+    socketTimeoutMS: 10000,
+  })
+  
+  await client.connect()
+  return { client, db: client.db('viviworks') }
 }
 
 export async function GET() {
+  let client = null
   try {
-    const db = await getDb()
+    const connection = await getDb()
+    client = connection.client
+    const db = connection.db
+    
     const config = await db.collection('config').findOne({ key: CONFIG_KEY })
+    
+    await client.close()
     
     if (config?.data) {
       return NextResponse.json(config.data, {
@@ -62,6 +73,7 @@ export async function GET() {
     })
   } catch (error) {
     console.error('Erreur GET caracteristiques config:', error)
+    if (client) await client.close()
     return NextResponse.json(DEFAULT_CONFIG, {
       headers: {
         'Cache-Control': 'no-store, no-cache, must-revalidate',
@@ -72,9 +84,12 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
+  let client = null
   try {
     const configData = await request.json()
-    const db = await getDb()
+    const connection = await getDb()
+    client = connection.client
+    const db = connection.db
     
     await db.collection('config').updateOne(
       { key: CONFIG_KEY },
@@ -82,9 +97,12 @@ export async function POST(request: Request) {
       { upsert: true }
     )
     
+    await client.close()
+    
     return NextResponse.json({ success: true })
   } catch (error) {
     console.error('Erreur POST caracteristiques config:', error)
+    if (client) await client.close()
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
   }
 }
