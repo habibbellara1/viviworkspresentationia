@@ -535,49 +535,49 @@ export function ModificationsContent() {
 
   return (
     <div className="max-w-7xl mx-auto p-2 sm:p-4 md:p-8">
-      <div className="mb-6 sm:mb-8">
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+      <div className="mb-4 sm:mb-6 md:mb-8">
+        <div className="flex flex-col gap-3 sm:gap-4">
           <div>
-            <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-900 mb-2">
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-gray-900 mb-1 sm:mb-2">
               Gestion des Prix
             </h1>
-            <p className="text-base sm:text-lg text-gray-600">
-              Configurez les prix, contenus et offres
+            <p className="text-sm sm:text-base text-gray-600">
+              Configurez les prix et offres
             </p>
           </div>
-          <div className="flex gap-3">
-            <Button onClick={handleResetAll} variant="outline" className="border-red-300 text-red-600 hover:bg-red-50">
-              <RotateCcw className="w-4 h-4 mr-2" />
-              Réinitialiser
+          <div className="flex gap-2 sm:gap-3">
+            <Button onClick={handleResetAll} variant="outline" size="sm" className="border-red-300 text-red-600 hover:bg-red-50 flex-1 sm:flex-none">
+              <RotateCcw className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">Reset</span>
             </Button>
-            <Button onClick={handleSaveAll} disabled={!hasChanges} className="bg-[#FF0671] hover:bg-[#e0055f] text-white disabled:opacity-50">
-              <Save className="w-4 h-4 mr-2" />
-              Sauvegarder
+            <Button onClick={handleSaveAll} disabled={!hasChanges} size="sm" className="bg-[#FF0671] hover:bg-[#e0055f] text-white disabled:opacity-50 flex-1 sm:flex-none">
+              <Save className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="text-xs sm:text-sm">Sauvegarder</span>
             </Button>
           </div>
         </div>
         {hasChanges && (
-          <div className="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-            <span className="text-yellow-800 text-sm font-medium">⚠️ Modifications non sauvegardées</span>
+          <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <span className="text-yellow-800 text-xs sm:text-sm font-medium">⚠️ Modifications non sauvegardées</span>
           </div>
         )}
       </div>
 
-      <Tabs defaultValue="offre" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-3 h-auto gap-2">
-          <TabsTrigger value="offre" className="text-sm py-3">💰 Offre de Partenariat</TabsTrigger>
-          <TabsTrigger value="caracteristiques" className="text-sm py-3">⚙️ Caractéristiques</TabsTrigger>
-          <TabsTrigger value="devis" className="text-sm py-3">📄 Gestion des Devis</TabsTrigger>
+      <Tabs defaultValue="offre" className="space-y-4 sm:space-y-6">
+        <TabsList className="grid w-full grid-cols-1 sm:grid-cols-3 h-auto gap-1 sm:gap-2 p-1">
+          <TabsTrigger value="offre" className="text-xs sm:text-sm py-2 sm:py-3 px-2">💰 Offre</TabsTrigger>
+          <TabsTrigger value="caracteristiques" className="text-xs sm:text-sm py-2 sm:py-3 px-2">⚙️ Caractéristiques</TabsTrigger>
+          <TabsTrigger value="devis" className="text-xs sm:text-sm py-2 sm:py-3 px-2">📄 Devis</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="offre" className="space-y-6">
+        <TabsContent value="offre" className="space-y-4 sm:space-y-6">
           {/* Durée + Bouton ajouter */}
-          <div className="flex flex-col sm:flex-row gap-4 justify-between">
-            <Card className="bg-white border border-gray-200 flex-1">
-              <CardContent className="p-4 flex items-center gap-4">
-                <Label className="font-medium">Durée d'engagement :</Label>
+          <div className="flex flex-col gap-3 sm:flex-row sm:gap-4 sm:justify-between">
+            <Card className="bg-white border border-gray-200 w-full sm:flex-1">
+              <CardContent className="p-3 sm:p-4 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-4">
+                <Label className="font-medium text-sm">Durée :</Label>
                 <Select value={selectedDuration} onValueChange={(v) => { setSelectedDuration(v); setHasChanges(true) }}>
-                  <SelectTrigger className="w-[150px]">
+                  <SelectTrigger className="w-full sm:w-[150px]">
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
@@ -586,117 +586,116 @@ export function ModificationsContent() {
                 </Select>
               </CardContent>
             </Card>
-            <Button onClick={handleAddItem} className="bg-green-600 hover:bg-green-700 text-white">
+            <Button onClick={handleAddItem} className="bg-green-600 hover:bg-green-700 text-white w-full sm:w-auto">
               <Plus className="w-4 h-4 mr-2" />
               Ajouter un service
             </Button>
           </div>
 
           {/* Liste des services */}
-          <div className="space-y-4">
+          <div className="space-y-3 sm:space-y-4">
             {pricingItems.map((item, index) => (
               <Card key={item.id} className={`bg-white border-2 transition-all ${item.isOffered ? 'border-[#FF0671] bg-pink-50/30' : 'border-gray-200'}`}>
-                <CardHeader className="pb-2">
-                  <div className="flex items-center justify-between gap-2">
-                    <div className="flex items-center gap-2">
-                      <div className="flex flex-col gap-1">
-                        <button onClick={() => moveItem(item.id, 'up')} disabled={index === 0} className="p-1 hover:bg-gray-100 rounded disabled:opacity-30">
-                          <GripVertical className="w-4 h-4 text-gray-400" />
-                        </button>
-                      </div>
+                <CardHeader className="pb-2 px-3 sm:px-6">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <button onClick={() => moveItem(item.id, 'up')} disabled={index === 0} className="p-1 hover:bg-gray-100 rounded disabled:opacity-30 flex-shrink-0">
+                        <GripVertical className="w-4 h-4 text-gray-400" />
+                      </button>
                       {editingItem === item.id ? (
                         <Input
                           value={item.category}
                           onChange={(e) => handleFieldChange(item.id, 'category', e.target.value)}
-                          className="text-lg font-bold text-[#FF0671] max-w-xs"
+                          className="text-base sm:text-lg font-bold text-[#FF0671] flex-1"
                         />
                       ) : (
-                        <CardTitle className="text-lg font-bold text-[#FF0671] cursor-pointer" onClick={() => setEditingItem(item.id)}>
+                        <CardTitle className="text-base sm:text-lg font-bold text-[#FF0671] cursor-pointer truncate" onClick={() => setEditingItem(item.id)}>
                           {item.category}
                         </CardTitle>
                       )}
                     </div>
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
                       {item.isOffered && (
-                        <span className="px-3 py-1 bg-[#FF0671] text-white text-xs font-bold rounded-full flex items-center gap-1">
-                          <Gift className="w-3 h-3" />OFFERT
+                        <span className="px-2 py-1 bg-[#FF0671] text-white text-xs font-bold rounded-full flex items-center gap-1">
+                          <Gift className="w-3 h-3" />
+                          <span className="hidden sm:inline">OFFERT</span>
                         </span>
                       )}
-                      <Button variant="ghost" size="sm" onClick={() => setEditingItem(editingItem === item.id ? null : item.id)}>
+                      <Button variant="ghost" size="sm" onClick={() => setEditingItem(editingItem === item.id ? null : item.id)} className="h-8 w-8 p-0">
                         {editingItem === item.id ? <Check className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                       </Button>
-                      <Button variant="ghost" size="sm" onClick={() => handleDeleteItem(item.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50">
+                      <Button variant="ghost" size="sm" onClick={() => handleDeleteItem(item.id)} className="text-red-500 hover:text-red-700 hover:bg-red-50 h-8 w-8 p-0">
                         <Trash2 className="w-4 h-4" />
                       </Button>
                     </div>
                   </div>
                 </CardHeader>
-                <CardContent className="space-y-4">
+                <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-6">
                   {/* Description */}
                   <div>
-                    <Label className="text-sm font-medium text-gray-700 mb-2 block">Description</Label>
+                    <Label className="text-xs sm:text-sm font-medium text-gray-700 mb-2 block">Description</Label>
                     {editingItem === item.id ? (
                       <Textarea
                         value={item.description}
                         onChange={(e) => handleFieldChange(item.id, 'description', e.target.value)}
-                        rows={4}
+                        rows={3}
                         className="text-sm"
                       />
                     ) : (
-                      <p className="text-sm text-gray-600 whitespace-pre-line cursor-pointer hover:bg-gray-50 p-2 rounded" onClick={() => setEditingItem(item.id)}>
+                      <p className="text-xs sm:text-sm text-gray-600 whitespace-pre-line cursor-pointer hover:bg-gray-50 p-2 rounded" onClick={() => setEditingItem(item.id)}>
                         {item.description}
                       </p>
                     )}
                   </div>
 
                   {/* Prix et options */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t">
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                        <Euro className="w-4 h-4" />Prix
+                  <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 pt-3 sm:pt-4 border-t">
+                    <div className="space-y-1 sm:space-y-2">
+                      <Label className="text-xs sm:text-sm font-medium text-gray-700 flex items-center gap-1">
+                        <Euro className="w-3 h-3 sm:w-4 sm:h-4" />Prix
                       </Label>
-                      <div className="flex gap-2">
-                        <Input type="number" value={item.price} onChange={(e) => handleFieldChange(item.id, 'price', parseFloat(e.target.value) || 0)} min="0" />
-                        <span className="flex items-center px-3 bg-gray-100 rounded-md text-gray-600">€</span>
+                      <div className="flex gap-1 sm:gap-2">
+                        <Input type="number" value={item.price} onChange={(e) => handleFieldChange(item.id, 'price', parseFloat(e.target.value) || 0)} min="0" className="text-sm" />
+                        <span className="flex items-center px-2 bg-gray-100 rounded-md text-gray-600 text-xs sm:text-sm">€</span>
                       </div>
                     </div>
 
                     {item.monthlyExtra !== undefined && (
-                      <div className="space-y-2">
-                        <Label className="text-sm font-medium text-gray-700">Bonus mensuel</Label>
-                        <div className="flex gap-2">
-                          <Input type="number" value={item.monthlyExtra} onChange={(e) => handleFieldChange(item.id, 'monthlyExtra', parseFloat(e.target.value) || 0)} min="0" />
-                          <span className="flex items-center px-3 bg-gray-100 rounded-md text-gray-600 text-xs">€/mois</span>
+                      <div className="space-y-1 sm:space-y-2">
+                        <Label className="text-xs sm:text-sm font-medium text-gray-700">Bonus</Label>
+                        <div className="flex gap-1 sm:gap-2">
+                          <Input type="number" value={item.monthlyExtra} onChange={(e) => handleFieldChange(item.id, 'monthlyExtra', parseFloat(e.target.value) || 0)} min="0" className="text-sm" />
+                          <span className="flex items-center px-1 sm:px-2 bg-gray-100 rounded-md text-gray-600 text-xs">€/m</span>
                         </div>
                       </div>
                     )}
 
-                    <div className="space-y-2">
-                      <Label className="text-sm font-medium text-gray-700">Périodicité</Label>
+                    <div className="space-y-1 sm:space-y-2">
+                      <Label className="text-xs sm:text-sm font-medium text-gray-700">Périodicité</Label>
                       <Select value={item.periodicity} onValueChange={(v) => handleFieldChange(item.id, 'periodicity', v)}>
-                        <SelectTrigger><SelectValue /></SelectTrigger>
+                        <SelectTrigger className="text-xs sm:text-sm"><SelectValue /></SelectTrigger>
                         <SelectContent>
-                          {periodicityOptions.map(p => <SelectItem key={p} value={p}>{p}</SelectItem>)}
+                          {periodicityOptions.map(p => <SelectItem key={p} value={p} className="text-xs sm:text-sm">{p}</SelectItem>)}
                         </SelectContent>
                       </Select>
                     </div>
 
-                    <div className="space-y-3">
+                    <div className="space-y-2 sm:space-y-3 col-span-2 sm:col-span-1">
                       <div className="flex items-center justify-between">
-                        <Label className="text-sm font-medium text-gray-700">Peut être offert</Label>
+                        <Label className="text-xs sm:text-sm font-medium text-gray-700">Peut être offert</Label>
                         <Switch checked={item.canBeOffered} onCheckedChange={(v) => handleFieldChange(item.id, 'canBeOffered', v)} />
                       </div>
                       {item.canBeOffered && (
                         <>
                           <div className="flex items-center justify-between">
-                            <Label className="text-sm font-medium text-[#FF0671]">Offrir par défaut</Label>
+                            <Label className="text-xs sm:text-sm font-medium text-[#FF0671]">Offrir</Label>
                             <Switch checked={item.isOffered} onCheckedChange={(v) => handleFieldChange(item.id, 'isOffered', v)} className="data-[state=checked]:bg-[#FF0671]" />
                           </div>
                           <div className="space-y-1">
-                            <Label className="text-sm font-medium text-[#f5a623]">Prix offre</Label>
-                            <div className="flex gap-2">
-                              <Input type="number" value={item.offerPrice ?? 0} onChange={(e) => handleFieldChange(item.id, 'offerPrice', parseFloat(e.target.value) || 0)} min="0" />
-                              <span className="flex items-center px-3 bg-orange-100 rounded-md text-orange-600">€</span>
+                            <Label className="text-xs sm:text-sm font-medium text-[#f5a623]">Prix offre</Label>
+                            <div className="flex gap-1 sm:gap-2">
+                              <Input type="number" value={item.offerPrice ?? 0} onChange={(e) => handleFieldChange(item.id, 'offerPrice', parseFloat(e.target.value) || 0)} min="0" className="text-sm" />
+                              <span className="flex items-center px-2 bg-orange-100 rounded-md text-orange-600 text-xs">€</span>
                             </div>
                           </div>
                         </>
@@ -710,27 +709,27 @@ export function ModificationsContent() {
 
           {/* Récapitulatif */}
           <Card className="bg-gradient-to-r from-gray-900 to-gray-800 text-white">
-            <CardHeader>
-              <CardTitle className="text-xl font-bold">📊 Récapitulatif</CardTitle>
+            <CardHeader className="pb-2 sm:pb-4">
+              <CardTitle className="text-base sm:text-xl font-bold">📊 Récapitulatif</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div className="p-4 bg-white/10 rounded-lg">
-                  <div className="text-sm text-gray-300 mb-1">Frais uniques</div>
-                  <div className="text-2xl font-bold">{calculateOneTimeTotal()}€ HT</div>
+            <CardContent className="space-y-3 sm:space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+                <div className="p-3 sm:p-4 bg-white/10 rounded-lg">
+                  <div className="text-xs sm:text-sm text-gray-300 mb-1">Frais uniques</div>
+                  <div className="text-lg sm:text-2xl font-bold">{calculateOneTimeTotal()}€ HT</div>
                 </div>
-                <div className="p-4 bg-white/10 rounded-lg">
-                  <div className="text-sm text-gray-300 mb-1">Abonnement mensuel</div>
-                  <div className="text-2xl font-bold text-[#FF0671]">{calculateMonthlyTotal()}€ HT/mois</div>
+                <div className="p-3 sm:p-4 bg-white/10 rounded-lg">
+                  <div className="text-xs sm:text-sm text-gray-300 mb-1">Mensuel</div>
+                  <div className="text-lg sm:text-2xl font-bold text-[#FF0671]">{calculateMonthlyTotal()}€/mois</div>
                 </div>
-                <div className="p-4 bg-[#FF0671]/20 rounded-lg border border-[#FF0671]">
-                  <div className="text-sm text-[#FF0671] mb-1">Économies offertes</div>
-                  <div className="text-2xl font-bold text-[#FF0671]">{calculateTotalSavings()}€</div>
+                <div className="p-3 sm:p-4 bg-[#FF0671]/20 rounded-lg border border-[#FF0671]">
+                  <div className="text-xs sm:text-sm text-[#FF0671] mb-1">Économies</div>
+                  <div className="text-lg sm:text-2xl font-bold text-[#FF0671]">{calculateTotalSavings()}€</div>
                 </div>
               </div>
-              <div className="pt-4 border-t border-white/20 flex justify-between">
+              <div className="pt-3 sm:pt-4 border-t border-white/20 flex justify-between text-sm sm:text-base">
                 <span className="text-gray-300">Engagement</span>
-                <span className="font-bold text-lg">{selectedDuration}</span>
+                <span className="font-bold">{selectedDuration}</span>
               </div>
             </CardContent>
           </Card>
