@@ -33,6 +33,13 @@ async function getDb() {
 export async function GET() {
   let client = null
   try {
+    if (!MONGODB_URI) {
+      console.error('MONGODB_URI non défini')
+      return NextResponse.json(DEFAULT_CONFIG, {
+        headers: { 'Cache-Control': 'no-store' }
+      })
+    }
+    
     const connection = await getDb()
     client = connection.client
     const db = connection.db
@@ -43,27 +50,20 @@ export async function GET() {
     
     if (config?.data) {
       return NextResponse.json(config.data, {
-        headers: {
-          'Cache-Control': 'no-store, no-cache, must-revalidate',
-          'Pragma': 'no-cache'
-        }
+        headers: { 'Cache-Control': 'no-store' }
       })
     }
     
     return NextResponse.json(DEFAULT_CONFIG, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
-        'Pragma': 'no-cache'
-      }
+      headers: { 'Cache-Control': 'no-store' }
     })
-  } catch (error) {
-    console.error('Erreur GET pricing config:', error)
-    if (client) await client.close()
+  } catch (error: any) {
+    console.error('Erreur GET pricing config:', error?.message || error)
+    if (client) {
+      try { await client.close() } catch (e) {}
+    }
     return NextResponse.json(DEFAULT_CONFIG, {
-      headers: {
-        'Cache-Control': 'no-store, no-cache, must-revalidate',
-        'Pragma': 'no-cache'
-      }
+      headers: { 'Cache-Control': 'no-store' }
     })
   }
 }
@@ -72,6 +72,11 @@ export async function GET() {
 export async function POST(request: Request) {
   let client = null
   try {
+    if (!MONGODB_URI) {
+      console.error('MONGODB_URI non défini')
+      return NextResponse.json({ error: 'Configuration serveur manquante' }, { status: 500 })
+    }
+    
     const configData = await request.json()
     const connection = await getDb()
     client = connection.client
@@ -86,9 +91,11 @@ export async function POST(request: Request) {
     await client.close()
     
     return NextResponse.json({ success: true })
-  } catch (error) {
-    console.error('Erreur POST pricing config:', error)
-    if (client) await client.close()
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 })
+  } catch (error: any) {
+    console.error('Erreur POST pricing config:', error?.message || error)
+    if (client) {
+      try { await client.close() } catch (e) {}
+    }
+    return NextResponse.json({ error: error?.message || 'Erreur serveur' }, { status: 500 })
   }
 }
