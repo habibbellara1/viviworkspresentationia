@@ -3,18 +3,19 @@
 import { useState, useEffect } from "react"
 import Image from "next/image"
 import { Plus, Check } from "lucide-react"
+import { toast } from "sonner"
 
 const defaultOptionsDisponibles = [
-  { id: "logo", label: "Création du logo" },
-  { id: "agenda", label: "Agenda en ligne" },
-  { id: "crm", label: "CRM" },
-  { id: "visio", label: "RDV visioconférence" },
-  { id: "photos", label: "Reportage photos" },
-  { id: "video", label: "Vidéo présentation" },
-  { id: "chatbot", label: "Chatbot IA" },
-  { id: "newsletter", label: "Newsletter" },
-  { id: "ecommerce", label: "E-commerce" },
-  { id: "multilingue", label: "Multilingue" },
+  { id: "logo", label: "Création du logo", price: 350 },
+  { id: "agenda", label: "Agenda en ligne", price: 150 },
+  { id: "crm", label: "CRM", price: 200 },
+  { id: "visio", label: "RDV visioconférence", price: 100 },
+  { id: "photos", label: "Reportage photos", price: 250 },
+  { id: "video", label: "Vidéo présentation", price: 400 },
+  { id: "chatbot", label: "Chatbot IA", price: 300 },
+  { id: "newsletter", label: "Newsletter", price: 150 },
+  { id: "ecommerce", label: "E-commerce", price: 500 },
+  { id: "multilingue", label: "Multilingue", price: 200 },
 ]
 
 const defaultOffrePersonnalisee = [
@@ -28,7 +29,7 @@ const defaultOffrePersonnalisee = [
   { id: "formation", label: "Formation", icon: "🎓" },
 ]
 
-interface OptionItem { id: string; label: string }
+interface OptionItem { id: string; label: string; price?: number }
 interface FeatureItem { id: string; label: string; icon: string }
 
 export function CaracteristiquesContent() {
@@ -95,9 +96,40 @@ export function CaracteristiquesContent() {
   }, [])
 
   const toggleOption = (optionId: string) => {
+    const option = optionsDisponibles.find(o => o.id === optionId)
+    
     setSelectedOptions(prev => {
-      const newSelection = prev.includes(optionId) ? prev.filter(id => id !== optionId) : [...prev, optionId]
+      const isSelected = prev.includes(optionId)
+      const newSelection = isSelected ? prev.filter(id => id !== optionId) : [...prev, optionId]
       localStorage.setItem('caracteristiques-options', JSON.stringify(newSelection))
+      
+      // Ajouter ou retirer du devis
+      if (option) {
+        const savedDevisData = localStorage.getItem('viviworks-devis-from-offre')
+        let devisData = savedDevisData ? JSON.parse(savedDevisData) : { lines: [], fromOffre: true, date: new Date().toISOString() }
+        
+        if (!isSelected) {
+          // Ajouter l'option au devis
+          const newLine = {
+            id: `option-${optionId}`,
+            description: option.label,
+            quantity: 1,
+            unitPrice: option.price || 0,
+            total: option.price || 0,
+            periodicity: "Versement unique"
+          }
+          devisData.lines = [...devisData.lines.filter((l: any) => l.id !== `option-${optionId}`), newLine]
+          toast.success(`${option.label} ajouté au devis (${option.price || 0}€)`)
+        } else {
+          // Retirer l'option du devis
+          devisData.lines = devisData.lines.filter((l: any) => l.id !== `option-${optionId}`)
+          toast.info(`${option.label} retiré du devis`)
+        }
+        
+        localStorage.setItem('viviworks-devis-from-offre', JSON.stringify(devisData))
+        window.dispatchEvent(new Event('devis-data-updated'))
+      }
+      
       return newSelection
     })
   }

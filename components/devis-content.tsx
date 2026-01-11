@@ -32,6 +32,18 @@ interface DevisLine {
   total: number
 }
 
+interface EmetteurInfo {
+  nom: string
+  adresse: string
+  codePostal: string
+  ville: string
+  pays: string
+  siren: string
+  email: string
+  telephone: string
+  site: string
+}
+
 interface DevisInfo {
   numero: string
   date: string
@@ -56,6 +68,19 @@ export function DevisContent() {
   const [isSending, setIsSending] = useState(false)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   
+  // Informations de l'émetteur (votre société)
+  const [emetteurInfo, setEmetteurInfo] = useState<EmetteurInfo>({
+    nom: "VIVIWORKS LTD UK",
+    adresse: "24-26 Arcadia Avenue Fin009",
+    codePostal: "N3 2JU",
+    ville: "Londres",
+    pays: "Royaume-Uni",
+    siren: "16296986",
+    email: "contact@viviworks.ai",
+    telephone: "",
+    site: "viviworks.ai"
+  })
+  
   const [devisInfo, setDevisInfo] = useState<DevisInfo>({
     numero: `DV-${Date.now().toString().slice(-6)}`,
     date: new Date().toISOString().split('T')[0],
@@ -70,8 +95,46 @@ export function DevisContent() {
     notes: "Devis valable 30 jours. Paiement à 30 jours net."
   })
 
+  // Fonction pour charger les lignes du devis
+  const loadDevisLines = () => {
+    const savedDevisData = localStorage.getItem('viviworks-devis-from-offre')
+    if (savedDevisData) {
+      try {
+        const devisData = JSON.parse(savedDevisData)
+        if (devisData.lines && devisData.lines.length > 0) {
+          // Convertir les lignes de l'offre en lignes de devis
+          const convertedLines: DevisLine[] = devisData.lines.map((line: { id: string; description: string; quantity: number; unitPrice: number; total: number; periodicity?: string }, index: number) => ({
+            id: line.id || (index + 1).toString(),
+            description: line.description || "",
+            quantity: line.quantity || 1,
+            unitPrice: line.unitPrice || 0,
+            total: line.total || (line.quantity * line.unitPrice) || 0
+          }))
+          
+          setDevisInfo(prev => ({
+            ...prev,
+            lines: convertedLines
+          }))
+        }
+      } catch (error) {
+        console.error('Erreur chargement lignes devis:', error)
+      }
+    }
+  }
+
   // Charger les informations client et les lignes depuis localStorage
   useEffect(() => {
+    // Charger les infos émetteur depuis localStorage
+    const savedEmetteur = localStorage.getItem('viviworks-emetteur-info')
+    if (savedEmetteur) {
+      try {
+        const info = JSON.parse(savedEmetteur)
+        setEmetteurInfo(prev => ({ ...prev, ...info }))
+      } catch (error) {
+        console.error('Erreur chargement infos émetteur:', error)
+      }
+    }
+    
     // Charger les infos client depuis entreprise-info
     const savedInfo = localStorage.getItem('entreprise-info')
     if (savedInfo) {
@@ -92,28 +155,17 @@ export function DevisContent() {
     }
     
     // Charger les lignes depuis offre partenariat
-    const savedDevisData = localStorage.getItem('viviworks-devis-from-offre')
-    if (savedDevisData) {
-      try {
-        const devisData = JSON.parse(savedDevisData)
-        if (devisData.lines && devisData.lines.length > 0) {
-          // Convertir les lignes de l'offre en lignes de devis
-          const convertedLines: DevisLine[] = devisData.lines.map((line: { id: string; description: string; quantity: number; unitPrice: number; total: number }, index: number) => ({
-            id: line.id || (index + 1).toString(),
-            description: line.description || "",
-            quantity: line.quantity || 1,
-            unitPrice: line.unitPrice || 0,
-            total: line.total || (line.quantity * line.unitPrice) || 0
-          }))
-          
-          setDevisInfo(prev => ({
-            ...prev,
-            lines: convertedLines
-          }))
-        }
-      } catch (error) {
-        console.error('Erreur chargement lignes devis:', error)
-      }
+    loadDevisLines()
+    
+    // Écouter les mises à jour des lignes (depuis Caractéristiques ou Offre)
+    const handleDevisUpdate = () => {
+      loadDevisLines()
+    }
+    
+    window.addEventListener('devis-data-updated', handleDevisUpdate)
+    
+    return () => {
+      window.removeEventListener('devis-data-updated', handleDevisUpdate)
     }
   }, [])
 
@@ -160,6 +212,14 @@ export function DevisContent() {
 
   const updateField = (field: keyof DevisInfo, value: string) => {
     setDevisInfo(prev => ({ ...prev, [field]: value }))
+  }
+
+  const updateEmetteurField = (field: keyof EmetteurInfo, value: string) => {
+    setEmetteurInfo(prev => {
+      const updated = { ...prev, [field]: value }
+      localStorage.setItem('viviworks-emetteur-info', JSON.stringify(updated))
+      return updated
+    })
   }
 
   const calculateTotal = () => {
@@ -337,7 +397,9 @@ Notes: ${devisInfo.notes}
             clientEmail: devisInfo.clientEmail,
             lines: devisInfo.lines,
             notes: devisInfo.notes,
-            total
+            total,
+            // Informations émetteur
+            emetteur: emetteurInfo
           },
           signature
         })
@@ -460,68 +522,172 @@ Notes: ${devisInfo.notes}
             </div>
           </div>
 
-          {/* Section: Client */}
+          {/* Section: Émetteur et Client côte à côte */}
           <div className="border-b border-gray-100 pb-6">
-            <h3 className="text-base sm:text-lg font-bold italic mb-4 text-[#FF0671] flex items-center gap-2">
-              <Building2 className="w-5 h-5" />
-              Informations client
-            </h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div className="md:col-span-2">
-                <Label className="text-sm font-medium text-gray-700 flex items-center gap-1">
-                  <User className="w-4 h-4" /> Nom / Entreprise
-                </Label>
-                <Input
-                  value={devisInfo.clientNom}
-                  onChange={(e) => updateField('clientNom', e.target.value)}
-                  placeholder="Nom du client"
-                  className="border-gray-300 focus:border-[#FF0671]"
-                />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* ÉMETTEUR - Gauche */}
+              <div className="bg-gradient-to-br from-pink-50 to-white p-4 rounded-xl border-2 border-[#FF0671]/20">
+                <h3 className="text-base sm:text-lg font-bold italic mb-4 text-[#FF0671] flex items-center gap-2">
+                  <Building2 className="w-5 h-5" />
+                  Émetteur (Votre société)
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Nom de la société</Label>
+                    <Input
+                      value={emetteurInfo.nom}
+                      onChange={(e) => updateEmetteurField('nom', e.target.value)}
+                      placeholder="Nom de votre société"
+                      className="border-gray-300 focus:border-[#FF0671]"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Adresse</Label>
+                    <Input
+                      value={emetteurInfo.adresse}
+                      onChange={(e) => updateEmetteurField('adresse', e.target.value)}
+                      placeholder="Adresse"
+                      className="border-gray-300 focus:border-[#FF0671]"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Code postal</Label>
+                      <Input
+                        value={emetteurInfo.codePostal}
+                        onChange={(e) => updateEmetteurField('codePostal', e.target.value)}
+                        placeholder="Code postal"
+                        className="border-gray-300 focus:border-[#FF0671]"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Ville</Label>
+                      <Input
+                        value={emetteurInfo.ville}
+                        onChange={(e) => updateEmetteurField('ville', e.target.value)}
+                        placeholder="Ville"
+                        className="border-gray-300 focus:border-[#FF0671]"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Pays</Label>
+                    <Input
+                      value={emetteurInfo.pays}
+                      onChange={(e) => updateEmetteurField('pays', e.target.value)}
+                      placeholder="Pays"
+                      className="border-gray-300 focus:border-[#FF0671]"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">SIREN</Label>
+                      <Input
+                        value={emetteurInfo.siren}
+                        onChange={(e) => updateEmetteurField('siren', e.target.value)}
+                        placeholder="SIREN"
+                        className="border-gray-300 focus:border-[#FF0671]"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Téléphone</Label>
+                      <Input
+                        value={emetteurInfo.telephone}
+                        onChange={(e) => updateEmetteurField('telephone', e.target.value)}
+                        placeholder="Téléphone"
+                        className="border-gray-300 focus:border-[#FF0671]"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Email</Label>
+                      <Input
+                        value={emetteurInfo.email}
+                        onChange={(e) => updateEmetteurField('email', e.target.value)}
+                        placeholder="Email"
+                        className="border-gray-300 focus:border-[#FF0671]"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Site web</Label>
+                      <Input
+                        value={emetteurInfo.site}
+                        onChange={(e) => updateEmetteurField('site', e.target.value)}
+                        placeholder="Site web"
+                        className="border-gray-300 focus:border-[#FF0671]"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
-              <div className="md:col-span-2">
-                <Label className="text-sm font-medium text-gray-700">Adresse</Label>
-                <Input
-                  value={devisInfo.clientAdresse}
-                  onChange={(e) => updateField('clientAdresse', e.target.value)}
-                  placeholder="Adresse"
-                  className="border-gray-300 focus:border-[#FF0671]"
-                />
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-700">Code postal</Label>
-                <Input
-                  value={devisInfo.clientCodePostal}
-                  onChange={(e) => updateField('clientCodePostal', e.target.value)}
-                  placeholder="75000"
-                  className="border-gray-300 focus:border-[#FF0671]"
-                />
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-700">Ville</Label>
-                <Input
-                  value={devisInfo.clientVille}
-                  onChange={(e) => updateField('clientVille', e.target.value)}
-                  placeholder="Paris"
-                  className="border-gray-300 focus:border-[#FF0671]"
-                />
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-700">Téléphone</Label>
-                <Input
-                  value={devisInfo.clientTelephone}
-                  onChange={(e) => updateField('clientTelephone', e.target.value)}
-                  placeholder="01 23 45 67 89"
-                  className="border-gray-300 focus:border-[#FF0671]"
-                />
-              </div>
-              <div>
-                <Label className="text-sm font-medium text-gray-700">Email</Label>
-                <Input
-                  value={devisInfo.clientEmail}
-                  onChange={(e) => updateField('clientEmail', e.target.value)}
-                  placeholder="client@email.fr"
-                  className="border-gray-300 focus:border-[#FF0671]"
-                />
+
+              {/* CLIENT - Droite */}
+              <div className="bg-gradient-to-br from-blue-50 to-white p-4 rounded-xl border-2 border-blue-200">
+                <h3 className="text-base sm:text-lg font-bold italic mb-4 text-blue-600 flex items-center gap-2">
+                  <User className="w-5 h-5" />
+                  Client
+                </h3>
+                <div className="space-y-3">
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Nom / Entreprise</Label>
+                    <Input
+                      value={devisInfo.clientNom}
+                      onChange={(e) => updateField('clientNom', e.target.value)}
+                      placeholder="Nom du client"
+                      className="border-gray-300 focus:border-blue-500"
+                    />
+                  </div>
+                  <div>
+                    <Label className="text-sm font-medium text-gray-700">Adresse</Label>
+                    <Input
+                      value={devisInfo.clientAdresse}
+                      onChange={(e) => updateField('clientAdresse', e.target.value)}
+                      placeholder="Adresse"
+                      className="border-gray-300 focus:border-blue-500"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Code postal</Label>
+                      <Input
+                        value={devisInfo.clientCodePostal}
+                        onChange={(e) => updateField('clientCodePostal', e.target.value)}
+                        placeholder="75000"
+                        className="border-gray-300 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Ville</Label>
+                      <Input
+                        value={devisInfo.clientVille}
+                        onChange={(e) => updateField('clientVille', e.target.value)}
+                        placeholder="Paris"
+                        className="border-gray-300 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Téléphone</Label>
+                      <Input
+                        value={devisInfo.clientTelephone}
+                        onChange={(e) => updateField('clientTelephone', e.target.value)}
+                        placeholder="01 23 45 67 89"
+                        className="border-gray-300 focus:border-blue-500"
+                      />
+                    </div>
+                    <div>
+                      <Label className="text-sm font-medium text-gray-700">Email</Label>
+                      <Input
+                        value={devisInfo.clientEmail}
+                        onChange={(e) => updateField('clientEmail', e.target.value)}
+                        placeholder="client@email.fr"
+                        className="border-gray-300 focus:border-blue-500"
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>

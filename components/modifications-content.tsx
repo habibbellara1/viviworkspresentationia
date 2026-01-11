@@ -43,6 +43,7 @@ interface PricingItem {
 interface OptionItem {
   id: string
   label: string
+  price?: number
 }
 
 interface FeatureItem {
@@ -143,16 +144,16 @@ const durations = ["12 MOIS", "24 MOIS", "36 MOIS", "48 MOIS", "60 MOIS"]
 
 // Options par défaut de la page Caractéristiques
 const defaultOptionsDisponibles: OptionItem[] = [
-  { id: "logo", label: "Création du logo" },
-  { id: "agenda", label: "Agenda en ligne" },
-  { id: "crm", label: "CRM" },
-  { id: "visio", label: "RDV en visioconférence" },
-  { id: "photos", label: "Reportage photos" },
-  { id: "video", label: "Vidéo de présentation" },
-  { id: "chatbot", label: "Chatbot IA" },
-  { id: "newsletter", label: "Newsletter automatisée" },
-  { id: "ecommerce", label: "Module e-commerce" },
-  { id: "multilingue", label: "Site multilingue" },
+  { id: "logo", label: "Création du logo", price: 350 },
+  { id: "agenda", label: "Agenda en ligne", price: 150 },
+  { id: "crm", label: "CRM", price: 200 },
+  { id: "visio", label: "RDV en visioconférence", price: 100 },
+  { id: "photos", label: "Reportage photos", price: 250 },
+  { id: "video", label: "Vidéo de présentation", price: 400 },
+  { id: "chatbot", label: "Chatbot IA", price: 300 },
+  { id: "newsletter", label: "Newsletter automatisée", price: 150 },
+  { id: "ecommerce", label: "Module e-commerce", price: 500 },
+  { id: "multilingue", label: "Site multilingue", price: 200 },
 ]
 
 const defaultOffrePersonnalisee: FeatureItem[] = [
