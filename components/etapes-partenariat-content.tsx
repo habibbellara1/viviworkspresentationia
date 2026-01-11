@@ -5,7 +5,6 @@ import Image from "next/image"
 import { ChevronLeft, ChevronRight } from "lucide-react"
 
 const images = [
-  "/WhatsApp Image 2026-01-07 at 23.31.56.jpeg",
   "/WhatsApp Image 2026-01-10 at 20.57.47.jpeg",
   "/WhatsApp Image 2026-01-10 at 20.57.48.jpeg"
 ]

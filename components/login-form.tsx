@@ -27,7 +27,8 @@ export function LoginForm({ onLogin }: LoginFormProps) {
     await new Promise(resolve => setTimeout(resolve, 1000))
 
     // Vérification des identifiants
-    if (username === "aymen" && password === "aymen2025") {
+    if ((username === "aymen" && password === "aymen2025") || 
+        (username === "mustafa" && password === "must2025")) {
       toast.success("Connexion réussie ! Bienvenue chez Viviworks")
       onLogin(true, username)
     } else {
