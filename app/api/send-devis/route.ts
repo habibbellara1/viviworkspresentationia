@@ -17,10 +17,27 @@ async function generateFacturePDF(data: DevisData): Promise<Uint8Array> {
   const pink = rgb(1, 0.024, 0.443), black = rgb(0, 0, 0), gray = rgb(0.4, 0.4, 0.4), white = rgb(1, 1, 1)
   const em = data.emetteur || { nom: "VIVIWORKS LTD UK", adresse: "24-26 Arcadia Avenue Fin009", codePostal: "N3 2JU", ville: "Londres", pays: "Royaume-Uni", siren: "16296986", email: "contact@viviworks.ai", telephone: "", site: "viviworks.ai" }
   let y = height - 50
-  page.drawRectangle({ x: 50, y: y - 25, width: 40, height: 40, color: pink })
-  page.drawText("V", { x: 62, y: y - 12, size: 26, font: fontBold, color: white })
-  page.drawText(em.nom, { x: 100, y, size: 14, font: fontBold, color: pink })
-  page.drawText(em.site, { x: 100, y: y - 14, size: 9, font, color: gray })
+  
+  // Charger le logo PNG
+  let logoLoaded = false
+  try {
+    const logoResponse = await fetch("https://presentationviviworks.netlify.app/vivi.png")
+    if (logoResponse.ok) {
+      const logoBuffer = await logoResponse.arrayBuffer()
+      const logoImage = await pdfDoc.embedPng(new Uint8Array(logoBuffer))
+      const logoDims = logoImage.scale(0.08)
+      page.drawImage(logoImage, { x: 50, y: y - logoDims.height + 15, width: logoDims.width, height: logoDims.height })
+      logoLoaded = true
+    }
+  } catch (e) { console.log("Logo error:", e) }
+  
+  if (!logoLoaded) {
+    page.drawRectangle({ x: 50, y: y - 25, width: 40, height: 40, color: pink })
+    page.drawText("V", { x: 62, y: y - 12, size: 26, font: fontBold, color: white })
+  }
+  
+  page.drawText(em.nom, { x: logoLoaded ? 95 : 100, y, size: 14, font: fontBold, color: pink })
+  page.drawText(em.site, { x: logoLoaded ? 95 : 100, y: y - 14, size: 9, font, color: gray })
   page.drawText("FACTURE", { x: 240, y: height - 50, size: 26, font: fontBold, color: pink })
   page.drawText("N " + data.numero, { x: 255, y: height - 72, size: 11, font, color: gray })
   page.drawText("Date: " + data.date, { x: 440, y: height - 50, size: 10, font, color: black })
@@ -81,23 +98,78 @@ async function generateCGVPDF(): Promise<Uint8Array> {
   const pink = rgb(1, 0.024, 0.443), black = rgb(0, 0, 0), gray = rgb(0.3, 0.3, 0.3)
   const page = pdfDoc.addPage([595, 842])
   let y = page.getSize().height - 50
-  page.drawText("CONDITIONS GENERALES DE VENTE - VIVIWORKS", { x: 80, y, size: 16, font: fontBold, color: pink }); y -= 40
-  page.drawText("Entre : La societe VIVIWORKS LTD UK, 24-26 Arcadia Avenue, Londres N3 2JU, UK", { x: 50, y, size: 9, font, color: black }); y -= 12
-  page.drawText("Siren: 16296986, representee par BELLARA (le Prestataire)", { x: 50, y, size: 9, font, color: black }); y -= 15
-  page.drawText("Et : Toute personne souhaitant beneficier des services de VIVIWORKS (le Client).", { x: 50, y, size: 9, font, color: black }); y -= 25
-  page.drawText("ARTICLE 1 : OBJET", { x: 50, y, size: 11, font: fontBold, color: pink }); y -= 15
-  page.drawText("VIVIWORKS propose la creation de site internet, hebergement et maintenance.", { x: 50, y, size: 9, font, color: black }); y -= 25
-  page.drawText("ARTICLE 2 : TARIFS", { x: 50, y, size: 11, font: fontBold, color: pink }); y -= 15
-  page.drawText("Frais de creation : 479 EUR TTC. Abonnement mensuel : 89 EUR TTC/mois.", { x: 50, y, size: 9, font, color: black }); y -= 25
-  page.drawText("ARTICLE 3 : PROPRIETE", { x: 50, y, size: 11, font: fontBold, color: pink }); y -= 15
-  page.drawText("Le site reste propriete de VIVIWORKS pendant 12 mois. Transfert apres paiement complet.", { x: 50, y, size: 9, font, color: black }); y -= 25
-  page.drawText("ARTICLE 4 : RESILIATION", { x: 50, y, size: 11, font: fontBold, color: pink }); y -= 15
-  page.drawText("Apres 12 mois, resiliation possible avec preavis de 30 jours.", { x: 50, y, size: 9, font, color: black }); y -= 25
-  page.drawText("ARTICLE 5 : MAINTENANCE", { x: 50, y, size: 11, font: fontBold, color: pink }); y -= 15
-  page.drawText("Mise a jour plugins, securite, corrections bugs inclus.", { x: 50, y, size: 9, font, color: black }); y -= 25
-  page.drawText("ARTICLE 6 : RESPONSABILITE", { x: 50, y, size: 11, font: fontBold, color: pink }); y -= 15
-  page.drawText("Disponibilite visee : 99%. Client responsable du contenu publie.", { x: 50, y, size: 9, font, color: black }); y -= 25
-  page.drawText("ARTICLE 7 : LITIGES - CGV soumises au droit francais.", { x: 50, y, size: 11, font: fontBold, color: pink })
+  
+  // Titre
+  page.drawText("CONDITIONS GENERALES DE VENTE - VIVIWORKS", { x: 80, y, size: 14, font: fontBold, color: pink })
+  y -= 30
+  
+  // Entre
+  page.drawText("Entre :", { x: 50, y, size: 10, font: fontBold, color: black }); y -= 14
+  page.drawText("La societe VIVIWORKS LTD UK", { x: 50, y, size: 9, font: fontBold, color: black }); y -= 11
+  page.drawText("24-26 Arcadia Avenue Fin009, Londres, Royaume-Uni, N3 2JU", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("Siren: 16296986", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("representee par BELLARA, ci-apres denommee << le Prestataire >>.", { x: 50, y, size: 9, font, color: black }); y -= 16
+  page.drawText("Et :", { x: 50, y, size: 10, font: fontBold, color: black }); y -= 14
+  page.drawText("Toute personne physique ou morale souhaitant beneficier des services de VIVIWORKS,", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("ci-apres denommee << le Client >>.", { x: 50, y, size: 9, font, color: black }); y -= 20
+  
+  // Article 1
+  page.drawText("ARTICLE 1 : OBJET ET PRESTATIONS", { x: 50, y, size: 10, font: fontBold, color: pink }); y -= 14
+  page.drawText("VIVIWORKS propose une prestation de creation de site internet comprenant :", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("- La conception et realisation technique (main-d oeuvre).", { x: 60, y, size: 9, font, color: black }); y -= 11
+  page.drawText("- Un service d hebergement, de gestion du nom de domaine et de maintenance technique.", { x: 60, y, size: 9, font, color: black }); y -= 18
+  
+  // Article 2
+  page.drawText("ARTICLE 2 : TARIFS ET MODALITES DE PAIEMENT", { x: 50, y, size: 10, font: fontBold, color: pink }); y -= 14
+  page.drawText("Le client s engage a regler les sommes suivantes :", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("Frais de creation (Paiement unique) : 479 EUR TTC.", { x: 60, y, size: 9, font: fontBold, color: black }); y -= 11
+  page.drawText("Ce montant correspond a la main-d oeuvre pour la conception du site. Il est exigible a la", { x: 60, y, size: 9, font, color: black }); y -= 11
+  page.drawText("signature du contrat ou selon l echeancier convenu.", { x: 60, y, size: 9, font, color: black }); y -= 11
+  page.drawText("Abonnement mensuel : 89 EUR TTC / mois.", { x: 60, y, size: 9, font: fontBold, color: black }); y -= 11
+  page.drawText("Ce montant comprend l hebergement, le renouvellement du nom de domaine et la", { x: 60, y, size: 9, font, color: black }); y -= 11
+  page.drawText("maintenance evolutive/corrective du site.", { x: 60, y, size: 9, font, color: black }); y -= 18
+  // Article 3
+  page.drawText("ARTICLE 3 : DUREE D ENGAGEMENT ET PROPRIETE DU SITE", { x: 50, y, size: 10, font: fontBold, color: pink }); y -= 14
+  page.drawText("Le contrat prevoit une periode de paiement obligatoire pour l acquisition de la propriete :", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("Propriete intellectuelle :", { x: 60, y, size: 9, font: fontBold, color: black }); y -= 11
+  page.drawText("Le site web (fichiers, base de donnees, code source) reste la propriete exclusive de", { x: 60, y, size: 9, font, color: black }); y -= 11
+  page.drawText("VIVIWORKS pendant les 12 premiers mois de l abonnement.", { x: 60, y, size: 9, font, color: black }); y -= 11
+  page.drawText("Transfert de propriete :", { x: 60, y, size: 9, font: fontBold, color: black }); y -= 11
+  page.drawText("Le transfert integral de la propriete du site et des codes d acces au serveur/domaine au", { x: 60, y, size: 9, font, color: black }); y -= 11
+  page.drawText("profit du Client ne sera effectif qu apres le reglement complet des 12 premieres", { x: 60, y, size: 9, font, color: black }); y -= 11
+  page.drawText("mensualites de 89 EUR.", { x: 60, y, size: 9, font, color: black }); y -= 11
+  page.drawText("En cas d arret du paiement avant le 12eme mois, le Client perd l usage du site et ne", { x: 60, y, size: 9, font, color: black }); y -= 11
+  page.drawText("pourra pretendre a la recuperation des fichiers.", { x: 60, y, size: 9, font, color: black }); y -= 18
+  
+  // Article 4
+  page.drawText("ARTICLE 4 : DUREE ET RESILIATION", { x: 50, y, size: 10, font: fontBold, color: pink }); y -= 14
+  page.drawText("Le contrat d abonnement est conclu pour une duree indeterminee avec une periode initiale", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("d engagement de fait pour le transfert de propriete (12 mois).", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("Apres 12 mois, le Client peut resilier l abonnement par lettre recommandee ou email avec", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("un preavis de 30 jours.", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("En cas de resiliation apres 12 mois, VIVIWORKS s engage a remettre au Client une", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("sauvegarde complete du site et les codes de transfert du nom de domaine.", { x: 50, y, size: 9, font, color: black }); y -= 18
+  
+  // Article 5
+  page.drawText("ARTICLE 5 : MAINTENANCE ET HEBERGEMENT", { x: 50, y, size: 10, font: fontBold, color: pink }); y -= 14
+  page.drawText("La maintenance comprend la mise a jour des plugins, la securite du site et les corrections", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("de bugs eventuels. Elle ne comprend pas l ajout de nouvelles fonctionnalites majeures ou", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("la creation de nouvelles pages non prevues au devis initial, qui feront l objet d un devis", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("separe.", { x: 50, y, size: 9, font, color: black }); y -= 18
+  
+  // Article 6
+  page.drawText("ARTICLE 6 : RESPONSABILITE", { x: 50, y, size: 10, font: fontBold, color: pink }); y -= 14
+  page.drawText("Le Prestataire s efforce d assurer une disponibilite du site a 99%. Toutefois, il ne pourra", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("etre tenu responsable des interruptions dues aux hebergeurs tiers ou a des cas de force", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("majeure. Le Client est responsable du contenu publie sur son site.", { x: 50, y, size: 9, font, color: black }); y -= 18
+  
+  // Article 7
+  page.drawText("ARTICLE 7 : LITIGES", { x: 50, y, size: 10, font: fontBold, color: pink }); y -= 14
+  page.drawText("Les presentes CGV sont soumises au droit francais. En cas de litige, une solution amiable", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("sera recherchee avant toute action devant les tribunaux competents de 24-26 Arcadia", { x: 50, y, size: 9, font, color: black }); y -= 11
+  page.drawText("Avenue Fin009, Londres, Royaume-Uni, N3 2JU.", { x: 50, y, size: 9, font, color: black })
+  
+  // Footer
   page.drawText("VIVIWORKS LTD UK - viviworks.ai", { x: 210, y: 30, size: 9, font, color: gray })
   return await pdfDoc.save()
 }
@@ -125,7 +197,7 @@ export async function POST(request: Request) {
         from: "Viviworks <facture@viviworks.ai>",
         to: [email],
         subject: "Conditions Generales de Vente - Viviworks",
-        html: "<div style=\"font-family:Arial;max-width:600px;margin:0 auto\"><div style=\"background:linear-gradient(to right,#FF0671,#ff3d8f);padding:20px;text-align:center\"><h1 style=\"color:white;margin:0\">Viviworks</h1></div><div style=\"padding:30px;background:#f9f9f9\"><h2 style=\"color:#333\">Bonjour " + (devisData.clientNom || "cher client") + ",</h2><p style=\"color:#666\">Veuillez trouver ci-joint nos CGV.</p></div></div>",
+        html: "<div style=\"font-family:Arial;max-width:600px;margin:0 auto\"><div style=\"background:linear-gradient(to right,#FF0671,#ff3d8f);padding:20px;text-align:center\"><h1 style=\"color:white;margin:0\">Viviworks</h1></div><div style=\"padding:30px;background:#f9f9f9\"><h2 style=\"color:#333\">Bonjour " + (devisData.clientNom || "cher client") + ",</h2><p style=\"color:#666\">Veuillez trouver ci-joint nos Conditions Generales de Vente.</p></div></div>",
         attachments: [{ filename: "CGV-Viviworks.pdf", content: cgvBase64 }]
       })
       if (cgvResult.error) return NextResponse.json({ success: true, message: "Facture envoyee, erreur CGV" })
