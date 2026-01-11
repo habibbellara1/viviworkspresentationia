@@ -18,7 +18,9 @@ import {
   PenTool,
   Send,
   RotateCcw,
-  Check
+  Check,
+  CreditCard,
+  Loader2
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -52,6 +54,7 @@ export function DevisContent() {
   const [signature, setSignature] = useState<string | null>(null)
   const [isSigned, setIsSigned] = useState(false)
   const [isSending, setIsSending] = useState(false)
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false)
   
   const [devisInfo, setDevisInfo] = useState<DevisInfo>({
     numero: `DV-${Date.now().toString().slice(-6)}`,
@@ -364,6 +367,46 @@ Notes: ${devisInfo.notes}
     }
   }
 
+  const handlePayment = async () => {
+    if (isProcessingPayment) return
+    
+    const total = calculateTotal()
+    if (total <= 0) {
+      toast.error("Le montant doit être supérieur à 0")
+      return
+    }
+
+    setIsProcessingPayment(true)
+    
+    try {
+      const response = await fetch('/api/create-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: total,
+          clientEmail: devisInfo.clientEmail,
+          clientNom: devisInfo.clientNom,
+          devisNumero: devisInfo.numero,
+          description: `Paiement facture ${devisInfo.numero} - ${devisInfo.clientNom}`
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (response.ok && result.url) {
+        // Rediriger vers Stripe Checkout
+        window.location.href = result.url
+      } else {
+        toast.error(result.error || "Erreur lors de la création du paiement")
+      }
+    } catch (error) {
+      console.error('Erreur paiement:', error)
+      toast.error("Erreur lors de la connexion au service de paiement")
+    } finally {
+      setIsProcessingPayment(false)
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-2 sm:px-4">
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -644,7 +687,7 @@ Notes: ${devisInfo.notes}
                   <p className="text-sm text-gray-500 mb-3">
                     Signé le {new Date().toLocaleString('fr-FR')}
                   </p>
-                  <div className="flex gap-2 justify-center">
+                  <div className="flex flex-col sm:flex-row gap-2 justify-center">
                     <Button
                       onClick={clearSignature}
                       variant="outline"
@@ -662,6 +705,22 @@ Notes: ${devisInfo.notes}
                     >
                       <Send className="w-4 h-4 mr-1" />
                       {isSending ? 'Envoi...' : 'Envoyer au client'}
+                    </Button>
+                    <Button
+                      onClick={handlePayment}
+                      disabled={isProcessingPayment || calculateTotal() <= 0}
+                      size="sm"
+                      className="bg-green-600 hover:bg-green-700 text-white"
+                    >
+                      <CreditCard className="w-4 h-4 mr-1" />
+                      {isProcessingPayment ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                          Chargement...
+                        </>
+                      ) : (
+                        'Payer maintenant'
+                      )}
                     </Button>
                   </div>
                   {!devisInfo.clientEmail && (
