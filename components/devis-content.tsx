@@ -310,11 +310,6 @@ Notes: ${devisInfo.notes}
   const sendSignedDevis = async () => {
     if (isSending) return // Empêcher les doubles clics
     
-    if (!signature) {
-      toast.error("Veuillez signer la facture avant de l'envoyer")
-      return
-    }
-    
     if (!devisInfo.clientEmail) {
       toast.error("Veuillez renseigner l'email du client")
       return
@@ -649,7 +644,7 @@ Notes: ${devisInfo.notes}
                       onTouchEnd={stopDrawing}
                     />
                   </div>
-                  <div className="flex gap-2 mt-3">
+                  <div className="flex flex-wrap gap-2 mt-3 justify-center">
                     <Button
                       onClick={clearSignature}
                       variant="outline"
@@ -665,9 +660,32 @@ Notes: ${devisInfo.notes}
                       className="bg-green-600 hover:bg-green-700 text-white"
                     >
                       <Check className="w-4 h-4 mr-1" />
-                      Valider la signature
+                      Valider signature
+                    </Button>
+                    <Button
+                      onClick={sendSignedDevis}
+                      disabled={isSending || !devisInfo.clientEmail}
+                      size="sm"
+                      className="bg-[#FF0671] hover:bg-[#e0055f] text-white"
+                    >
+                      <Send className="w-4 h-4 mr-1" />
+                      {isSending ? 'Envoi...' : 'Envoyer'}
+                    </Button>
+                    <Button
+                      onClick={handlePayment}
+                      disabled={isProcessingPayment || calculateTotal() <= 0}
+                      size="sm"
+                      className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                      <CreditCard className="w-4 h-4 mr-1" />
+                      {isProcessingPayment ? 'Chargement...' : 'Payer'}
                     </Button>
                   </div>
+                  {!devisInfo.clientEmail && (
+                    <p className="text-xs text-red-500 mt-2">
+                      Renseignez l'email du client pour envoyer
+                    </p>
+                  )}
                 </>
               ) : (
                 <div className="text-center">
