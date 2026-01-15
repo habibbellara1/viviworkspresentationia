@@ -87,6 +87,8 @@ export function OffrePartenariatContent() {
   const [currentPage, setCurrentPage] = useState(0)
   const [offeredItems, setOfferedItems] = useState<Set<string>>(new Set())
   const [isOffreActive, setIsOffreActive] = useState(false)
+  const [clientNom, setClientNom] = useState<string>("")
+  const [showPartenariatMessage, setShowPartenariatMessage] = useState(false)
 
   // Fonction pour charger la configuration
   const loadPricingConfig = async () => {
@@ -128,6 +130,20 @@ export function OffrePartenariatContent() {
   useEffect(() => {
     loadPricingConfig()
     
+    // Charger le nom du client depuis entreprise-info
+    const loadClientName = () => {
+      const savedInfo = localStorage.getItem('entreprise-info')
+      if (savedInfo) {
+        try {
+          const info = JSON.parse(savedInfo)
+          setClientNom(info.nom || info.enseigne || info.raisonSociale || "")
+        } catch (error) {
+          console.error('Erreur chargement nom client:', error)
+        }
+      }
+    }
+    loadClientName()
+    
     // Écouter un événement personnalisé pour les changements dans le même onglet
     const handlePricingUpdate = () => {
       loadPricingConfig()
@@ -137,12 +153,14 @@ export function OffrePartenariatContent() {
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible') {
         loadPricingConfig()
+        loadClientName()
       }
     }
     
     // Recharger quand la fenêtre reprend le focus
     const handleFocus = () => {
       loadPricingConfig()
+      loadClientName()
     }
     
     window.addEventListener('offre-pricing-updated', handlePricingUpdate)
@@ -178,9 +196,11 @@ export function OffrePartenariatContent() {
       // Désactiver le mode - vider les items offerts
       setOfferedItems(new Set())
       setIsOffreActive(false)
+      setShowPartenariatMessage(false)
     } else {
       // Activer le mode (sans offrir automatiquement tous les items)
       setIsOffreActive(true)
+      setShowPartenariatMessage(true)
     }
   }
 
@@ -265,6 +285,13 @@ export function OffrePartenariatContent() {
             >
               Confirmer
             </button>
+            {showPartenariatMessage && (
+              <div className="flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-[#FF0671] to-[#ff3d8f] rounded-lg shadow-md animate-pulse">
+                <span className="text-white font-bold text-xs sm:text-sm">
+                  🎉 MR {clientNom || "Client"} est passé en partenariat
+                </span>
+              </div>
+            )}
           </div>
           
           <div className="hidden sm:flex items-center gap-12 text-sm font-semibold text-gray-600">
