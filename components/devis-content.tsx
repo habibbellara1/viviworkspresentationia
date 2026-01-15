@@ -30,6 +30,7 @@ interface DevisLine {
   quantity: number
   unitPrice: number
   total: number
+  periodicity?: string
 }
 
 interface EmetteurInfo {
@@ -108,7 +109,8 @@ export function DevisContent() {
             description: line.description || "",
             quantity: line.quantity || 1,
             unitPrice: line.unitPrice || 0,
-            total: line.total || (line.quantity * line.unitPrice) || 0
+            total: line.total || (line.quantity * line.unitPrice) || 0,
+            periodicity: line.periodicity || ""
           }))
           
           setDevisInfo(prev => ({
