@@ -2,10 +2,12 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { ExternalLink, Monitor, Globe, Image as ImageIcon } from "lucide-react"
-import { useEffect } from "react"
+import { ExternalLink, Monitor, Globe, Image as ImageIcon, ChevronLeft, ChevronRight } from "lucide-react"
+import { useEffect, useState } from "react"
 
 export function ShowroomContent() {
+  const [currentPage, setCurrentPage] = useState(0)
+  const sitesPerPage = 4
   const websites = [
     {
       id: "ecoclimatic",
@@ -158,6 +160,24 @@ export function ShowroomContent() {
     window.open(url, '_blank')
   }
 
+  // Calculer les sites à afficher pour la page actuelle
+  const totalPages = Math.ceil(websites.length / sitesPerPage)
+  const startIndex = currentPage * sitesPerPage
+  const endIndex = startIndex + sitesPerPage
+  const currentSites = websites.slice(startIndex, endIndex)
+
+  const goToNextPage = () => {
+    if (currentPage < totalPages - 1) {
+      setCurrentPage(currentPage + 1)
+    }
+  }
+
+  const goToPreviousPage = () => {
+    if (currentPage > 0) {
+      setCurrentPage(currentPage - 1)
+    }
+  }
+
   return (
     <div className="max-w-7xl mx-auto p-2 sm:p-4 md:p-8">
       <div className="mb-6 sm:mb-8">
@@ -168,10 +188,39 @@ export function ShowroomContent() {
           Découvrez nos réalisations web. Chaque site est conçu avec soin pour répondre 
           aux besoins spécifiques de nos clients et optimiser leur présence en ligne.
         </p>
+        
+        {/* Indicateur de pagination */}
+        <div className="mt-4 flex items-center justify-between">
+          <p className="text-sm text-slate-500">
+            Page {currentPage + 1} sur {totalPages} • {websites.length} sites au total
+          </p>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToPreviousPage}
+              disabled={currentPage === 0}
+              className="flex items-center gap-1"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              Précédent
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={goToNextPage}
+              disabled={currentPage === totalPages - 1}
+              className="flex items-center gap-1"
+            >
+              Suivant
+              <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8">
-        {websites.map((site) => (
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
+        {currentSites.map((site) => (
           <Card 
             key={site.id} 
             className="bg-white border border-gray-200 hover:border-[#4fafc4] transition-all duration-300 hover:shadow-lg"
@@ -240,6 +289,45 @@ export function ShowroomContent() {
             </CardContent>
           </Card>
         ))}
+      </div>
+
+      {/* Navigation pagination en bas */}
+      <div className="mt-8 flex items-center justify-center gap-4">
+        <Button
+          variant="outline"
+          onClick={goToPreviousPage}
+          disabled={currentPage === 0}
+          className="flex items-center gap-2"
+        >
+          <ChevronLeft className="w-5 h-5" />
+          Précédent
+        </Button>
+        
+        <div className="flex items-center gap-2">
+          {Array.from({ length: totalPages }, (_, i) => (
+            <button
+              key={i}
+              onClick={() => setCurrentPage(i)}
+              className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium transition-all ${
+                currentPage === i
+                  ? 'bg-[#FF0671] text-white'
+                  : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+              }`}
+            >
+              {i + 1}
+            </button>
+          ))}
+        </div>
+        
+        <Button
+          variant="outline"
+          onClick={goToNextPage}
+          disabled={currentPage === totalPages - 1}
+          className="flex items-center gap-2"
+        >
+          Suivant
+          <ChevronRight className="w-5 h-5" />
+        </Button>
       </div>
 
       {/* Section d'informations */}

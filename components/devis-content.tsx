@@ -68,6 +68,7 @@ export function DevisContent() {
   const [isSigned, setIsSigned] = useState(false)
   const [isSending, setIsSending] = useState(false)
   const [isProcessingPayment, setIsProcessingPayment] = useState(false)
+  const [isProcessingSepa, setIsProcessingSepa] = useState(false)
   
   // Informations de l'émetteur (votre société)
   const [emetteurInfo, setEmetteurInfo] = useState<EmetteurInfo>({
@@ -466,6 +467,46 @@ Notes: ${devisInfo.notes}
     }
   }
 
+  const handleSepaPayment = async () => {
+    if (isProcessingSepa) return
+    
+    const total = calculateTotal()
+    if (total <= 0) {
+      toast.error("Le montant doit être supérieur à 0")
+      return
+    }
+
+    setIsProcessingSepa(true)
+    
+    try {
+      const response = await fetch('/api/create-sepa-checkout', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: total,
+          clientEmail: devisInfo.clientEmail,
+          clientNom: devisInfo.clientNom,
+          devisNumero: devisInfo.numero,
+          description: `Prélèvement SEPA facture ${devisInfo.numero} - ${devisInfo.clientNom}`
+        })
+      })
+      
+      const result = await response.json()
+      
+      if (response.ok && result.url) {
+        // Rediriger vers Stripe Checkout pour prélèvement SEPA
+        window.location.href = result.url
+      } else {
+        toast.error(result.error || "Erreur lors de la création du prélèvement SEPA")
+      }
+    } catch (error) {
+      console.error('Erreur prélèvement SEPA:', error)
+      toast.error("Erreur lors de la connexion au service de paiement")
+    } finally {
+      setIsProcessingSepa(false)
+    }
+  }
+
   return (
     <div className="max-w-6xl mx-auto px-2 sm:px-4">
       <div className="bg-white rounded-2xl shadow-lg overflow-hidden">
@@ -848,6 +889,15 @@ Notes: ${devisInfo.notes}
                       <CreditCard className="w-4 h-4 mr-1" />
                       {isProcessingPayment ? 'Chargement...' : 'Payer'}
                     </Button>
+                    <Button
+                      onClick={handleSepaPayment}
+                      disabled={isProcessingSepa || calculateTotal() <= 0}
+                      size="sm"
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      <Building2 className="w-4 h-4 mr-1" />
+                      {isProcessingSepa ? 'Chargement...' : 'RIB (SEPA)'}
+                    </Button>
                   </div>
                   {!devisInfo.clientEmail && (
                     <p className="text-xs text-red-500 mt-2">
@@ -906,6 +956,22 @@ Notes: ${devisInfo.notes}
                         </>
                       ) : (
                         'Payer maintenant'
+                      )}
+                    </Button>
+                    <Button
+                      onClick={handleSepaPayment}
+                      disabled={isProcessingSepa || calculateTotal() <= 0}
+                      size="sm"
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      <Building2 className="w-4 h-4 mr-1" />
+                      {isProcessingSepa ? (
+                        <>
+                          <Loader2 className="w-4 h-4 mr-1 animate-spin" />
+                          Chargement...
+                        </>
+                      ) : (
+                        'Prélèvement SEPA'
                       )}
                     </Button>
                   </div>
