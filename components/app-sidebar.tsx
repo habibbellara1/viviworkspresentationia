@@ -144,29 +144,72 @@ export function AppSidebar({ onSectionChange, onLogout, currentUser }: AppSideba
 
   // Charger l'ordre sauvegardé au démarrage
   useEffect(() => {
-    const savedOrder = localStorage.getItem('sidebar-menu-order')
-    if (savedOrder) {
+    const loadOrder = async () => {
       try {
-        const orderKeys = JSON.parse(savedOrder)
-        const reorderedItems = orderKeys
-          .map((key: string) => menuItems.find(item => item.key === key))
-          .filter(Boolean)
+        // Charger depuis l'API (serveur)
+        const response = await fetch('/api/sidebar-order', {
+          cache: 'no-store',
+          headers: { 'Cache-Control': 'no-cache' }
+        })
         
-        // Ajouter les nouveaux items qui n'étaient pas dans l'ordre sauvegardé
-        const existingKeys = new Set(orderKeys)
-        const newItems = menuItems.filter(item => !existingKeys.has(item.key))
-        
-        setItems([...reorderedItems, ...newItems])
+        if (response.ok) {
+          const data = await response.json()
+          if (data.order && Array.isArray(data.order)) {
+            const reorderedItems = data.order
+              .map((key: string) => menuItems.find(item => item.key === key))
+              .filter(Boolean)
+            
+            // Ajouter les nouveaux items qui n'étaient pas dans l'ordre sauvegardé
+            const existingKeys = new Set(data.order)
+            const newItems = menuItems.filter(item => !existingKeys.has(item.key))
+            
+            setItems([...reorderedItems, ...newItems])
+            return
+          }
+        }
       } catch (error) {
-        console.error('Erreur chargement ordre menu:', error)
+        console.error('Erreur chargement ordre sidebar:', error)
+      }
+      
+      // Fallback: charger depuis localStorage
+      const savedOrder = localStorage.getItem('sidebar-menu-order')
+      if (savedOrder) {
+        try {
+          const orderKeys = JSON.parse(savedOrder)
+          const reorderedItems = orderKeys
+            .map((key: string) => menuItems.find(item => item.key === key))
+            .filter(Boolean)
+          
+          const existingKeys = new Set(orderKeys)
+          const newItems = menuItems.filter(item => !existingKeys.has(item.key))
+          
+          setItems([...reorderedItems, ...newItems])
+        } catch (error) {
+          console.error('Erreur chargement ordre menu localStorage:', error)
+        }
       }
     }
+    
+    loadOrder()
   }, [])
 
-  // Sauvegarder l'ordre dans localStorage
-  const saveOrder = (newItems: typeof menuItems) => {
+  // Sauvegarder l'ordre dans localStorage ET sur le serveur
+  const saveOrder = async (newItems: typeof menuItems) => {
     const orderKeys = newItems.map(item => item.key)
+    
+    // Sauvegarder dans localStorage (pour backup)
     localStorage.setItem('sidebar-menu-order', JSON.stringify(orderKeys))
+    
+    // Sauvegarder sur le serveur (pour partage entre ordinateurs)
+    try {
+      await fetch('/api/sidebar-order', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ order: orderKeys })
+      })
+    } catch (error) {
+      console.error('Erreur sauvegarde ordre sidebar:', error)
+    }
   }
 
   const handleDragStart = (e: React.DragEvent, index: number) => {
