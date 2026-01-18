@@ -105,14 +105,18 @@ export function DevisContent() {
         const devisData = JSON.parse(savedDevisData)
         if (devisData.lines && devisData.lines.length > 0) {
           // Convertir les lignes de l'offre en lignes de devis
-          const convertedLines: DevisLine[] = devisData.lines.map((line: { id: string; description: string; quantity: number; unitPrice: number; total: number; periodicity?: string }, index: number) => ({
-            id: line.id || (index + 1).toString(),
-            description: line.description || "",
-            quantity: line.quantity || 1,
-            unitPrice: line.unitPrice || 0,
-            total: line.total || (line.quantity * line.unitPrice) || 0,
-            periodicity: line.periodicity || ""
-          }))
+          const convertedLines: DevisLine[] = devisData.lines.map((line: { id: string; description: string; quantity: number; unitPrice: number; total: number; periodicity?: string }, index: number) => {
+            // Si c'est mensuel, mettre la quantité à 12 par défaut
+            const quantity = line.periodicity === "Mensuel" ? 12 : (line.quantity || 1)
+            return {
+              id: line.id || (index + 1).toString(),
+              description: line.description || "",
+              quantity: quantity,
+              unitPrice: line.unitPrice || 0,
+              total: (quantity * (line.unitPrice || 0)),
+              periodicity: line.periodicity || ""
+            }
+          })
           
           setDevisInfo(prev => ({
             ...prev,
@@ -778,7 +782,9 @@ Notes: ${devisInfo.notes}
                     
                     <div className="grid grid-cols-3 gap-3">
                       <div>
-                        <Label className="text-sm text-gray-600">Quantité</Label>
+                        <Label className="text-sm text-gray-600">
+                          {line.periodicity === "Mensuel" ? "Nombre de mois" : "Quantité"}
+                        </Label>
                         <Input
                           type="number"
                           min="1"
