@@ -1,6 +1,6 @@
 "use client"
 
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import Image from "next/image"
 
 import {
@@ -139,6 +139,62 @@ export function AppSidebar({ onSectionChange, onLogout, currentUser }: AppSideba
   const { isMobile, setOpenMobile } = useSidebar()
   const [activeItem, setActiveItem] = useState<string>("viviworks")
   const [hoveredItem, setHoveredItem] = useState<string | null>(null)
+  const [items, setItems] = useState(menuItems)
+  const [draggedItem, setDraggedItem] = useState<number | null>(null)
+
+  // Charger l'ordre sauvegardé au démarrage
+  useEffect(() => {
+    const savedOrder = localStorage.getItem('sidebar-menu-order')
+    if (savedOrder) {
+      try {
+        const orderKeys = JSON.parse(savedOrder)
+        const reorderedItems = orderKeys
+          .map((key: string) => menuItems.find(item => item.key === key))
+          .filter(Boolean)
+        
+        // Ajouter les nouveaux items qui n'étaient pas dans l'ordre sauvegardé
+        const existingKeys = new Set(orderKeys)
+        const newItems = menuItems.filter(item => !existingKeys.has(item.key))
+        
+        setItems([...reorderedItems, ...newItems])
+      } catch (error) {
+        console.error('Erreur chargement ordre menu:', error)
+      }
+    }
+  }, [])
+
+  // Sauvegarder l'ordre dans localStorage
+  const saveOrder = (newItems: typeof menuItems) => {
+    const orderKeys = newItems.map(item => item.key)
+    localStorage.setItem('sidebar-menu-order', JSON.stringify(orderKeys))
+  }
+
+  const handleDragStart = (e: React.DragEvent, index: number) => {
+    setDraggedItem(index)
+    e.dataTransfer.effectAllowed = 'move'
+  }
+
+  const handleDragOver = (e: React.DragEvent, index: number) => {
+    e.preventDefault()
+    
+    if (draggedItem === null || draggedItem === index) return
+
+    const newItems = [...items]
+    const draggedItemContent = newItems[draggedItem]
+    
+    // Retirer l'item de sa position actuelle
+    newItems.splice(draggedItem, 1)
+    // L'insérer à la nouvelle position
+    newItems.splice(index, 0, draggedItemContent)
+    
+    setItems(newItems)
+    setDraggedItem(index)
+  }
+
+  const handleDragEnd = () => {
+    setDraggedItem(null)
+    saveOrder(items)
+  }
 
   const handleItemClick = (key: string) => {
     setActiveItem(key)
@@ -195,9 +251,10 @@ export function AppSidebar({ onSectionChange, onLogout, currentUser }: AppSideba
           <SidebarGroup>
             <SidebarGroupContent>
               <SidebarMenu className="space-y-1">
-                {menuItems.map((item) => {
+                {items.map((item, index) => {
                   const isActive = activeItem === item.key
                   const isHovered = hoveredItem === item.key
+                  const isDragging = draggedItem === index
                   const Icon = item.icon
 
                   return (
@@ -206,6 +263,7 @@ export function AppSidebar({ onSectionChange, onLogout, currentUser }: AppSideba
                         className={`
                           relative group w-full rounded-xl py-3 px-3 
                           transition-all duration-300 ease-out
+                          ${isDragging ? "opacity-50 scale-95" : "opacity-100 scale-100"}
                           ${isActive 
                             ? "bg-gradient-to-r from-[#FF0671] to-[#ff3d8f] text-white shadow-lg shadow-[#FF0671]/30" 
                             : "text-gray-400 hover:text-white hover:bg-white/5"
@@ -220,19 +278,31 @@ export function AppSidebar({ onSectionChange, onLogout, currentUser }: AppSideba
                           <div className="absolute left-0 top-1/2 -translate-y-1/2 w-1 h-8 bg-white rounded-r-full" />
                         )}
                         
-                        {/* Icône avec effet */}
-                        <div className={`
-                          relative flex items-center justify-center w-8 h-8 rounded-lg mr-3
-                          transition-all duration-300
-                          ${isActive 
-                            ? "bg-white/20" 
-                            : isHovered 
-                              ? "bg-[#FF0671]/20" 
-                              : "bg-transparent"
-                          }
-                        `}>
+                        {/* Icône avec effet - DRAGGABLE */}
+                        <div 
+                          draggable
+                          onDragStart={(e) => {
+                            e.stopPropagation()
+                            handleDragStart(e, index)
+                          }}
+                          onDragOver={(e) => {
+                            e.stopPropagation()
+                            handleDragOver(e, index)
+                          }}
+                          onDragEnd={handleDragEnd}
+                          className={`
+                            relative flex items-center justify-center w-8 h-8 rounded-lg mr-3
+                            transition-all duration-300 cursor-move
+                            ${isActive 
+                              ? "bg-white/20" 
+                              : isHovered 
+                                ? "bg-[#FF0671]/20" 
+                                : "bg-transparent"
+                            }
+                          `}
+                        >
                           <Icon className={`
-                            w-4 h-4 md:w-5 md:h-5 transition-transform duration-300
+                            w-4 h-4 md:w-5 md:h-5 transition-transform duration-300 pointer-events-none
                             ${isHovered && !isActive ? "scale-110" : ""}
                           `} />
                         </div>
