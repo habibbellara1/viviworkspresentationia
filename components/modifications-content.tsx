@@ -133,7 +133,7 @@ const defaultPricingItems: PricingItem[] = [
     category: "Frais de mise en oeuvre",
     description: "Site jusqu'à 10 pages",
     price: 449,
-    periodicity: "Versement unique",
+    periodicity: "Mensuel",
     canBeOffered: false,
     isOffered: false
   }

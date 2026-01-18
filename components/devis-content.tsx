@@ -788,7 +788,9 @@ Notes: ${devisInfo.notes}
                         />
                       </div>
                       <div>
-                        <Label className="text-sm text-gray-600">Prix unitaire (€)</Label>
+                        <Label className="text-sm text-gray-600">
+                          {line.periodicity === "Mensuel" ? "Versement mensuel (€)" : "Versement unique (€)"}
+                        </Label>
                         <Input
                           type="number"
                           min="0"
